@@ -51,11 +51,13 @@ describe('AgentLintEngine End-to-End', () => {
     const fixResult = engine.fix([filePath]);
 
     expect(fixResult.filesModified).toContain(filePath);
-    expect(fixResult.violationsFixed).toBe(1);
+    expect(fixResult.violationsFixed).toBe(2); // 1 i18n + 1 restricted component (<button> -> <Button>)
 
     const updatedCode = fs.readFileSync(filePath, 'utf-8');
     expect(updatedCode).toContain("{t('xac_nhan')}");
     expect(updatedCode).toContain("useTranslations");
+    expect(updatedCode).toContain("<Button>{t('xac_nhan')}</Button>");
+    expect(updatedCode).toContain("import { Button } from '@/components/ui/button';");
 
     const viJsonPath = path.join(tempDir, 'locales', 'vi.json');
     expect(fs.existsSync(viJsonPath)).toBe(true);
