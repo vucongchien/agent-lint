@@ -194,7 +194,28 @@ export function scanI18nViolations(options: ScanI18nOptions): Violation[] {
       let isInsideJSX = false;
       let p: any = path.parentPath;
       while (p) {
-        if (p.isJSXElement?.() || p.isJSXAttribute?.()) {
+        if (p.isJSXAttribute?.()) {
+          const attrName = p.node.name?.name?.toLowerCase?.();
+          if (
+            attrName &&
+            (NON_USER_FACING_PROPS.has(attrName) ||
+              attrName.startsWith('data-') ||
+              attrName.startsWith('aria-hidden'))
+          ) {
+            // Nằm trong className, style, href, key... -> Bỏ qua không quét i18n
+            return;
+          }
+          isInsideJSX = true;
+          break;
+        }
+        if (p.isJSXElement?.()) {
+          const opening = p.node.openingElement;
+          if (t.isJSXIdentifier(opening.name)) {
+            const tagName = opening.name.name.toLowerCase();
+            if (TECHNICAL_JSX_TAGS.has(tagName)) {
+              return;
+            }
+          }
           isInsideJSX = true;
           break;
         }
