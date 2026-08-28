@@ -1,148 +1,189 @@
-# ⚡ agent-lint
+# agent-lint
 
-> **Linter & Auto-Sync Engine chuyên dụng cho i18n và Design Tokens trên React / Next.js — Tối ưu cho AI Agent & Developer Workflow.**
+<p align="center">
+  <strong>AI-Native Linter & Auto-Sync Engine for i18n and Design Tokens in React & Next.js</strong>
+</p>
 
----
-
-## 🎯 1. Nghiệp vụ & Tiêu chuẩn Tuân thủ (Business Governance)
-
-`agent-lint` được thiết kế để giải quyết 2 bài toán quản trị mã nguồn lớn nhất trong phát triển Frontend:
-
-1. **Quản trị Quốc tế hóa (i18n Readiness Governance):**
-   - **Mục tiêu:** Đảm bảo không có chuỗi văn bản cứng (hardcoded strings) nào lọt vào mã nguồn JSX/TSX.
-   - **Tác động:** Giúp doanh nghiệp sẵn sàng mở rộng đa ngôn ngữ (Global Expansion) mà không cần mất hàng tuần refactor thủ công.
-2. **Quản trị Hệ thống Thiết kế (Design System Consistency):**
-   - **Mục tiêu:** Loại bỏ hoàn toàn mã màu tùy tiện (`#1e293b`), khoảng cách pixel lẻ (`p-[15px]`, `m-[23px]`).
-   - **Tác động:** Duy trì tính đồng nhất tuyệt đối về UI/UX theo chuẩn Design Tokens đã được phê duyệt.
+<p align="center">
+  <a href="https://www.npmjs.com/package/agent-lint"><img src="https://img.shields.io/npm/v/agent-lint.svg?color=blue" alt="npm version"></a>
+  <a href="https://github.com/vucongchien/agent-lint/actions"><img src="https://img.shields.io/badge/tests-29%20passed-brightgreen" alt="Tests"></a>
+  <a href="https://github.com/vucongchien/agent-lint/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.x-blue" alt="TypeScript"></a>
+</p>
 
 ---
 
-## 💡 2. Tính năng Cốt lõi & Kết quả Đạt được (Features & Outcomes)
+## 💡 Overview
 
-### 🔹 Feature 1: i18n Hardcode Detection & Direct Dictionary Sync
-* **Trước khi chạy:**
-  ```tsx
-  // ❌ Vi phạm: Text cứng trong JSX và thuộc tính
-  export function Login() {
-    return <input placeholder="Nhập email của bạn" title="Email" />;
-  }
-  ```
-* **Sau khi chạy `npx agent-lint fix`:**
-  ```tsx
-  // ✅ Tự động chèn import, hook và thay thế khóa
-  import { useTranslations } from 'next-intl';
+Modern frontend codebases often suffer from two major scaling issues:
+1. **Hardcoded UI Strings:** Unextracted copy in JSX prevents seamless localization (i18n) and costs weeks of manual refactoring during international expansion.
+2. **Ad-hoc Styling & Rogue Values:** Arbitrary hex colors (`#1e293b`) and ad-hoc pixels (`p-[15px]`) break Design System consistency.
 
-  export function Login() {
-    const t = useTranslations();
-    return <input placeholder={t('nhap_email_cua_ban')} title={t('email')} />;
-  }
-  ```
-  ```json
-  // ✅ locales/vi.json (Tự động tạo key)
-  {
-    "nhap_email_cua_ban": "Nhập email của bạn",
-    "email": "Email"
-  }
-  ```
+**`agent-lint`** is a high-performance AST linter and automated code transformer. It detects hardcoded text and design token violations with **zero false positives**, automatically syncs translation keys directly into your locale dictionary files (`locales/en.json`, `messages/vi.json`), and provides structured outputs tailored for **AI Coding Agents** (Antigravity, Cursor, Claude Code).
 
 ---
 
-### 🔹 Feature 2: Design Token Compliance & Nearest Suggestion
-* **Khả năng:** Quét mã hex, pixel lẻ trong Tailwind arbitrary classes và `style={{ ... }}`.
-* **Kết quả:** Tự động tính khoảng cách màu ($\Delta E$) và khoảng cách pixel để gợi ý Token gần nhất:
-  - `bg-[#1e293b]` $\rightarrow$ Gợi ý `bg-slate-800`
-  - `p-[15px]` $\rightarrow$ Gợi ý `p-4` (16px)
-  - `m-[23px]` $\rightarrow$ Gợi ý `m-6` (24px)
-  - `text-[15px]` $\rightarrow$ Gợi ý `text-sm` (14px)
+## ✨ Features
+
+- **⚡ Direct i18n Auto-Sync:** Converts hardcoded JSX text and attributes (`placeholder`, `title`, `aria-label`) into translation keys, injects `useTranslations()` / `useTranslation()` hooks, and appends entries directly to your dictionary files.
+- **🎨 Design Token Enforcement:** Flags arbitrary colors and spacing in Tailwind classes and inline styles, recommending the nearest token via $\Delta E$ (CIEDE2000) color distance matching.
+- **🎯 Zero False Positives (Semantic Heuristics):** Intelligently ignores non-user-facing props (`id`, `key`, `type`, `className`), technical tags (`<svg>`, `<code>`, `<pre>`), CSS units, URLs, UUIDs, and CSS variables (`var(--...)`).
+- **🤖 AI Agent Native:** Built-in `--format=agent` output and ready-to-use `SKILL.md` for seamless autonomous refactoring.
+- **🔌 Dual Ecosystem:** Run as a standalone CLI or integrate into your IDE via `eslint-plugin-agent-lint`.
 
 ---
 
-### 🔹 Feature 3: AI Agent Native Integration
-* **Báo cáo chuẩn hóa:** Hỗ trợ lệnh `npx agent-lint scan --format=agent` xuất Markdown Prompt hành động cho AI Agent (Antigravity, Cursor, Claude Code) tự động đọc và thực hiện refactor.
-* **Skill đóng gói sẵn:** Cung cấp file `skills/agent-lint/SKILL.md` sẵn sàng sử dụng.
+## 📦 Installation
 
----
-
-## 📂 3. Cấu trúc Thư mục Tối ưu nhất (Recommended Project Structures)
-
-`agent-lint` hỗ trợ chế độ **Auto-Detect** thông minh cho 3 mô hình phổ biến:
-
-### A. Next.js App Router (Khuyên dùng với `next-intl`)
-```text
-my-next-app/
-├── .agent-lint.yaml           # File cấu hình (hoặc chạy agent-lint init)
-├── messages/                  # Thư mục từ điển (Auto-detected)
-│   ├── vi.json
-│   └── en.json
-└── src/
-    └── app/[locale]/
-        └── page.tsx
-```
-
-### B. Next.js Pages Router / React-i18next
-```text
-my-react-app/
-├── locales/                   # Thư mục từ điển (Auto-detected)
-│   ├── vi.json
-│   └── en.json
-└── src/
-    └── components/
-```
-
-### C. Monorepo / Custom Structure
-Có thể tùy chỉnh đường dẫn trong `.agent-lint.yaml`:
-```yaml
-rules:
-  i18n:
-    locales:
-      dir: "src/shared/i18n/locales"
-```
-
----
-
-## 📊 4. Ma trận Hỗ trợ (Support Matrix)
-
-| Danh mục | Hỗ trợ hiện tại |
-| :--- | :--- |
-| **Frameworks** | React 18 / 19, Next.js (App Router & Pages Router), Vite, Remix |
-| **i18n Libraries** | `next-intl`, `react-i18next`, `i18next`, Custom translation hooks |
-| **Styling & Tokens** | Tailwind CSS (v3 / v4), CSS Variables, Custom Token Maps |
-| **Tooling & CI** | Standalone CLI, ESLint 8 / 9 (Flat Config), Oxlint CI Pipeline |
-| **AI Agents** | Antigravity, Cursor, Claude Code, GitHub Copilot |
-
----
-
-## 🚀 5. Bắt đầu Nhanh (Quick Start)
-
-### Cài đặt
 ```bash
+# pnpm
 pnpm add -D agent-lint eslint-plugin-agent-lint
-# hoặc: npm install -D agent-lint eslint-plugin-agent-lint
+
+# npm
+npm install --save-dev agent-lint eslint-plugin-agent-lint
+
+# yarn / bun
+yarn add -D agent-lint eslint-plugin-agent-lint
+bun add -d agent-lint eslint-plugin-agent-lint
 ```
 
-### Sử dụng CLI
-```bash
-# 1. Khởi tạo cấu hình
-npx agent-lint init
+---
 
-# 2. Quét kiểm tra vi phạm
+## 🚀 Quick Start
+
+### 1. Initialize Configuration
+Generate a `.agent-lint.yaml` with smart defaults:
+```bash
+npx agent-lint init
+```
+
+### 2. Scan for Violations
+```bash
+# Pretty terminal output
 npx agent-lint scan
 
-# 3. Tự động sửa lỗi & đồng bộ từ điển
-npx agent-lint fix
+# Machine-readable JSON output (for CI)
+npx agent-lint scan --format=json
 
-# 4. Xuất báo cáo cho AI Agent
+# Actionable Markdown prompt (for AI Agents)
 npx agent-lint scan --format=agent
 ```
 
-### Cấu hình ESLint (Optional)
+### 3. Automated Fix & Dictionary Sync
+```bash
+# Automatically extract strings, inject hooks, and update dictionary files
+npx agent-lint fix
+```
+
+---
+
+## 🔍 Before & After
+
+### Before `agent-lint fix`:
+```tsx
+// ❌ Hardcoded strings and arbitrary styling
+export function WelcomeBanner() {
+  return (
+    <div className="bg-[#1e293b] p-[15px]">
+      <h1>Welcome back!</h1>
+      <input placeholder="Search products..." />
+    </div>
+  );
+}
+```
+
+### After `agent-lint fix`:
+```tsx
+// ✅ Extracted, typed, and localized with Design Tokens
+import { useTranslations } from 'next-intl';
+
+export function WelcomeBanner() {
+  const t = useTranslations();
+  return (
+    <div className="bg-slate-800 p-4">
+      <h1>{t('welcome_back')}</h1>
+      <input placeholder={t('search_products')} />
+    </div>
+  );
+}
+```
+
+```json
+// ✅ locales/en.json (Automatically updated)
+{
+  "welcome_back": "Welcome back!",
+  "search_products": "Search products..."
+}
+```
+
+---
+
+## ⚙️ Configuration (`.agent-lint.yaml`)
+
+```yaml
+version: "1.0"
+
+target:
+  include:
+    - "src/**/*.{tsx,jsx}"
+  exclude:
+    - "**/*.test.{tsx,jsx}"
+    - "**/node_modules/**"
+    - "**/.next/**"
+
+rules:
+  # 1. i18n Rule
+  i18n:
+    enabled: true
+    severity: "error" # "warn" | "error"
+    locales:
+      dir: "auto" # Auto-detects 'messages', 'locales', 'src/locales'
+      default: "auto"
+      supported: "auto"
+      file_format: "json"
+    integration:
+      framework: "auto" # Auto-detects 'next-intl' vs 'react-i18next'
+      hook_name: "useTranslations"
+      function_name: "t"
+      auto_import: true
+      import_source: "next-intl"
+    key_generation:
+      strategy: "slug" # "slug" | "camelCase" | "file_scoped" | "hash"
+      max_length: 40
+    attributes:
+      - "placeholder"
+      - "title"
+      - "alt"
+      - "aria-label"
+
+  # 2. Design Tokens Rule
+  design_tokens:
+    enabled: true
+    severity: "warn"
+    provider: "tailwind"
+    enforce:
+      colors: true # Flags raw hex/rgb: bg-[#1e293b]
+      spacing: true # Flags raw pixels: p-[15px]
+      font_sizes: true # Flags raw font-size: text-[15px]
+    suggestion:
+      auto_suggest: true
+      color_tolerance: 0.85
+```
+
+---
+
+## 🔌 ESLint Integration
+
+Add the plugin to your `eslint.config.mjs` (ESLint 9 Flat Config):
+
 ```js
-// eslint.config.mjs
 import agentLint from 'eslint-plugin-agent-lint';
 
 export default [
   {
-    plugins: { 'agent-lint': agentLint },
+    plugins: {
+      'agent-lint': agentLint,
+    },
     rules: {
       'agent-lint/no-hardcoded-i18n': 'error',
       'agent-lint/enforce-design-tokens': 'warn',
@@ -153,5 +194,40 @@ export default [
 
 ---
 
+## 🤖 AI Agent Workflow (`SKILL.md`)
+
+`agent-lint` includes a preconfigured skill definition at `skills/agent-lint/SKILL.md`.
+
+When delegating refactoring to an AI Agent:
+1. Run `npx agent-lint scan --format=agent`.
+2. The agent parses the structured action report.
+3. The agent executes `npx agent-lint fix` or contextual key refinements.
+4. The agent verifies with `npx agent-lint scan` until 0 errors remain.
+
+---
+
+## 📂 Recommended Project Layouts
+
+| Architecture | Locales Path | Framework |
+| :--- | :--- | :--- |
+| **Next.js App Router** | `messages/[locale].json` | `next-intl` |
+| **Next.js Pages Router** | `public/locales/[locale]/common.json` | `next-i18next` |
+| **React (Vite / CRA)** | `src/locales/[locale].json` | `react-i18next` |
+
+---
+
+## 🧪 Testing
+
+```bash
+# Run unit tests
+pnpm test
+
+# Run build
+pnpm build
+```
+
+---
+
 ## 📄 License
-MIT © 2026 agent-lint
+
+MIT © [vucongchien](https://github.com/vucongchien)
