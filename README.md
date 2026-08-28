@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://github.com/vucongchien/agent-lint/actions/workflows/ci.yml"><img src="https://github.com/vucongchien/agent-lint/actions/workflows/ci.yml/badge.svg" alt="CI Status"></a>
-  <a href="https://github.com/vucongchien/agent-lint/actions"><img src="https://img.shields.io/badge/tests-54%20passed-brightgreen" alt="Tests"></a>
+  <a href="https://github.com/vucongchien/agent-lint/actions"><img src="https://img.shields.io/badge/tests-61%20passed-brightgreen" alt="Tests"></a>
   <a href="https://www.npmjs.com/package/agent-lint"><img src="https://img.shields.io/badge/npm-v0.1.0-blue" alt="npm version"></a>
   <a href="https://github.com/vucongchien/agent-lint/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
   <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.9+-blue" alt="TypeScript"></a>
@@ -17,6 +17,7 @@
 ## ⚡ Highlights
 
 - **🏛️ 1-Click Architecture Presets**: Enforce Clean Architecture, FSD, DDD, and Next.js Server/Client boundaries with zero boilerplate.
+- **✨ Design Craft & Visual Quality**: Eliminates AI slop (thick side-tabs, gradient text, glowing halo shadows, nested cards, floating eyebrow kickers, fake pulse dots).
 - **⚡ Direct i18n Auto-Sync & ICU**: Auto-extracts static text & dynamic template literals (`` `Hello ${user}` ``) $\rightarrow$ updates dictionary files in real time.
 - **🧹 Dead Keys Cleaner**: Detects and prunes orphaned translation keys (`agent-lint clean-keys --prune`).
 - **🎨 Design Tokens & Custom Components**: Flags arbitrary hex/pixels, while auto-replacing raw `<button>`, `<a>`, `<img>` with Design System components.
@@ -167,6 +168,18 @@ rules:
     preset: "nextjs"
     severity: "error"
     allow_type_imports: true
+
+  # 6. Design Craft & Visual Quality (Anti-AI Slop)
+  design_craft:
+    enabled: true
+    severity: "warn"
+    no_side_accent_border: true
+    no_gradient_text: true
+    no_glowing_shadows: true
+    no_nested_cards: true
+    no_eyebrow_kicker: true
+    no_fake_pulse_dot: true
+    no_ghost_card: true
 ```
 
 ---

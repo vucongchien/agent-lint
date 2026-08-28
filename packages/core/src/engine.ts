@@ -20,6 +20,7 @@ import {
 import { scanCompositionViolations } from './architecture/composition-scanner';
 import { scanDuplicateLayoutViolations } from './architecture/deduplication-scanner';
 import { scanArchitectureViolations } from './architecture/boundary-scanner';
+import { scanDesignCraftViolations } from './tokens/craft-scanner';
 
 export interface EngineOptions {
   rootDir?: string;
@@ -148,10 +149,20 @@ export class AgentLintEngine {
           });
           violations.push(...archViolations);
         }
+
+        // 6. Scan Design Craft & Visual Quality Violations (Anti-AI Slop)
+        if (this.config.rules.design_craft?.enabled) {
+          const craftViolations = scanDesignCraftViolations({
+            filePath,
+            code,
+            config: this.config.rules.design_craft,
+          });
+          violations.push(...craftViolations);
+        }
       }
     }
 
-    // 6. Scan Component Deduplication across files (Rule of Three)
+    // 7. Scan Component Deduplication across files (Rule of Three)
     if (this.config.rules.component_deduplication?.enabled) {
       const dedupViolations = scanDuplicateLayoutViolations(
         scannedCodeList,

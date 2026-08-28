@@ -26,6 +26,7 @@ Thư mục này chứa toàn bộ bộ unit test cho gói `@agent-lint/core`. M�
 | **`deduplication-scanner.test.ts`**| `src/architecture/deduplication-scanner.ts` | - Nhận diện Component/Layout bị trùng cấu trúc và class CSS theo Quy tắc số 3 (Rule of Three).<br/>- Gợi ý tái cấu trúc thành Polymorphic / Variant Component. |
 | **`presets.test.ts`** | `src/config/presets.ts` | - Kiểm thử mở rộng tự động 4 Architecture Presets (`nextjs`, `clean-architecture`, `fsd`, `ddd`).<br/>- Kiểm thử khả năng ghi đè cấu hình linh hoạt. |
 | **`boundary-scanner.test.ts`** | `src/architecture/boundary-scanner.ts` | - Kiểm tra tính thuần túy của Domain Layer (Domain Purity - Cấm ORM/DB trong Domain).<br/>- Kiểm tra đảo ngược phân tầng FSD/Clean Arch.<br/>- Kiểm soát ranh giới Server/Client Next.js và hỗ trợ `import type`. |
+| **`design-craft.test.ts`** | `src/tokens/craft-scanner.ts` | - Kiểm soát chất lượng thẩm mỹ và Design Craft (Anti-AI Slop).<br/>- Bắt side-tab, gradient text, glowing shadow, nested cards, floating eyebrow kicker, fake pulse dot, ghost cards. |
 | **`engine.test.ts`** | `src/engine.ts` | - Kiểm thử toàn diện luồng quét (Scan) và sửa tự động (Fix) đa file. |
 
 ---

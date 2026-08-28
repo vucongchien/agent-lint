@@ -108,3 +108,16 @@ rules:
         - "fs"
         - "path"
 
+  # 6. Design Craft & Visual Quality (Anti-AI Slop Governance)
+  design_craft:
+    enabled: true
+    severity: "warn"
+    no_side_accent_border: true  # Cấm viền dày 1 bên mép card (border-l-4)
+    no_gradient_text: true       # Cấm chữ dải màu lòe loẹt (bg-clip-text text-transparent)
+    no_glowing_shadows: true     # Cấm bóng đổ phát sáng màu mè (shadow-[0_0_...px])
+    no_nested_cards: true        # Cấm card lồng trong card
+    no_eyebrow_kicker: true      # Cấm nhãn in hoa đè trên heading
+    no_fake_pulse_dot: true      # Cấm animate-ping trên status dot tĩnh
+    no_ghost_card: true          # Cấm vừa viền dày vừa bóng to trên cùng 1 card
+
+

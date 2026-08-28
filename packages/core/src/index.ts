@@ -14,6 +14,7 @@ export * from './tokens/tailwind-tokens';
 export * from './tokens/scanner';
 export * from './tokens/css-scanner';
 export * from './tokens/component-enforcer';
+export * from './tokens/craft-scanner';
 export * from './architecture/composition-scanner';
 export * from './architecture/deduplication-scanner';
 export * from './architecture/boundary-scanner';

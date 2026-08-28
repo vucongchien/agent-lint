@@ -137,6 +137,18 @@ export const ArchitectureRuleSchema = z.object({
   public_api: PublicApiSchema.optional(),
 });
 
+export const DesignCraftSchema = z.object({
+  enabled: z.boolean().default(true),
+  severity: z.enum(['warn', 'error', 'off']).default('warn'),
+  no_side_accent_border: z.boolean().default(true),
+  no_gradient_text: z.boolean().default(true),
+  no_glowing_shadows: z.boolean().default(true),
+  no_nested_cards: z.boolean().default(true),
+  no_eyebrow_kicker: z.boolean().default(true),
+  no_fake_pulse_dot: z.boolean().default(true),
+  no_ghost_card: z.boolean().default(true),
+});
+
 export const AgentLintConfigSchema = z.object({
   version: z.string().default('1.0'),
   preset: z.enum(['nextjs', 'clean-architecture', 'fsd', 'ddd', 'custom']).optional(),
@@ -156,6 +168,7 @@ export const AgentLintConfigSchema = z.object({
     clean_composition: CleanCompositionSchema.optional(),
     component_deduplication: ComponentDeduplicationSchema.optional(),
     architecture: ArchitectureRuleSchema.optional(),
+    design_craft: DesignCraftSchema.optional(),
   }).default({}),
 });
 
