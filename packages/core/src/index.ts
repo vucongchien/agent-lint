@@ -1,5 +1,6 @@
 export * from './types';
 export * from './config/schema';
+export * from './config/presets';
 export * from './config/loader';
 export * from './i18n/slug';
 export * from './i18n/locales';
@@ -15,5 +16,6 @@ export * from './tokens/css-scanner';
 export * from './tokens/component-enforcer';
 export * from './architecture/composition-scanner';
 export * from './architecture/deduplication-scanner';
+export * from './architecture/boundary-scanner';
 export * from './reporter/index';
 export * from './engine';

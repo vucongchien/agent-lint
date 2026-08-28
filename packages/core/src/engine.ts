@@ -19,6 +19,7 @@ import {
 } from './tokens/component-enforcer';
 import { scanCompositionViolations } from './architecture/composition-scanner';
 import { scanDuplicateLayoutViolations } from './architecture/deduplication-scanner';
+import { scanArchitectureViolations } from './architecture/boundary-scanner';
 
 export interface EngineOptions {
   rootDir?: string;
@@ -136,10 +137,21 @@ export class AgentLintEngine {
           });
           violations.push(...compViolations);
         }
+
+        // 5. Scan Architecture & Boundary Violations (Clean Arch, FSD, DDD, Server/Client)
+        if (this.config.rules.architecture?.enabled) {
+          const archViolations = scanArchitectureViolations({
+            filePath,
+            code,
+            config: this.config.rules.architecture,
+            rootDir: this.rootDir,
+          });
+          violations.push(...archViolations);
+        }
       }
     }
 
-    // 5. Scan Component Deduplication across files (Rule of Three)
+    // 6. Scan Component Deduplication across files (Rule of Three)
     if (this.config.rules.component_deduplication?.enabled) {
       const dedupViolations = scanDuplicateLayoutViolations(
         scannedCodeList,

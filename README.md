@@ -212,6 +212,13 @@ rules:
     min_occurrences: 3
     min_element_count: 4
     similarity_threshold: 0.80
+
+  # 5. Architecture & Boundary Governance (Presets: nextjs | clean-architecture | fsd | ddd)
+  architecture:
+    enabled: true
+    preset: "nextjs"
+    severity: "error"
+    allow_type_imports: true
 ```
 
 ---

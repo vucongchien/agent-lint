@@ -97,8 +97,41 @@ export interface ComponentDeduplicationConfig {
   similarity_threshold: number; // Ngưỡng giống nhau về class CSS (mặc định: 0.8)
 }
 
+export type ArchitecturePreset = 'nextjs' | 'clean-architecture' | 'fsd' | 'ddd' | 'custom';
+
+export interface LayerConfig {
+  name: string;
+  path: string;
+  can_import: string[];
+  disallowed_packages?: string[];
+  message?: string;
+}
+
+export interface ServerClientBoundaryConfig {
+  enabled: boolean;
+  client_identifiers?: string[];
+  disallowed_imports: string[];
+}
+
+export interface PublicApiConfig {
+  enabled: boolean;
+  modules: string[];
+  entry_files?: string[];
+}
+
+export interface ArchitectureRuleConfig {
+  enabled: boolean;
+  severity: Severity;
+  preset?: ArchitecturePreset;
+  allow_type_imports?: boolean;
+  layers?: LayerConfig[];
+  server_client_boundary?: ServerClientBoundaryConfig;
+  public_api?: PublicApiConfig;
+}
+
 export interface AgentLintConfig {
   version: string;
+  preset?: ArchitecturePreset;
   target: {
     include: string[];
     exclude: string[];
@@ -108,6 +141,7 @@ export interface AgentLintConfig {
     design_tokens: DesignTokensRuleConfig;
     clean_composition?: CleanCompositionConfig;
     component_deduplication?: ComponentDeduplicationConfig;
+    architecture?: ArchitectureRuleConfig;
   };
 }
 
@@ -119,7 +153,16 @@ export interface SourceLocation {
 }
 
 export interface Violation {
-  ruleId: 'i18n-hardcoded' | 'token-violation' | 'restricted-element' | 'composition-violation' | 'duplicate-layout';
+  ruleId:
+    | 'i18n-hardcoded'
+    | 'token-violation'
+    | 'restricted-element'
+    | 'composition-violation'
+    | 'duplicate-layout'
+    | 'architecture-layer-inversion'
+    | 'domain-purity-violation'
+    | 'server-client-boundary'
+    | 'public-api-violation';
   severity: Severity;
   message: string;
   file: string;

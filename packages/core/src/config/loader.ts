@@ -3,6 +3,7 @@ import path from 'path';
 import YAML from 'yaml';
 import { AgentLintConfigSchema, type AgentLintConfigOutput } from './schema';
 import type { AgentLintConfig } from '../types';
+import { ARCHITECTURE_PRESETS } from './presets';
 
 const DEFAULT_CONFIG_FILENAMES = [
   '.agent-lint.yaml',
@@ -58,46 +59,54 @@ export function autoDetectLocalesDir(rootDir: string = process.cwd()): string {
 /**
  * Tự động phát hiện các ngôn ngữ hỗ trợ từ các file trong thư mục locales
  */
-export function autoDetectSupportedLocales(
-  localesDirFull: string
-): { defaultLocale: string; supportedLocales: string[] } {
+export function autoDetectSupportedLocales(localesDirFull: string): {
+  defaultLocale: string;
+  supportedLocales: string[];
+} {
   if (!fs.existsSync(localesDirFull)) {
     return { defaultLocale: 'vi', supportedLocales: ['vi', 'en'] };
   }
 
-  try {
-    const files = fs.readdirSync(localesDirFull);
-    const locales = files
-      .filter((file) => /\.(json|ts|js)$/.test(file))
-      .map((file) => path.basename(file, path.extname(file)))
-      .filter(Boolean);
+  const files = fs.readdirSync(localesDirFull);
+  const detected: string[] = [];
 
-    if (locales.length > 0) {
-      const defaultLoc = locales.includes('vi')
-        ? 'vi'
-        : locales.includes('en')
-        ? 'en'
-        : locales[0];
-      return { defaultLocale: defaultLoc, supportedLocales: locales };
+  for (const file of files) {
+    const ext = path.extname(file);
+    if (['.json', '.yaml', '.yml'].includes(ext)) {
+      const lang = path.basename(file, ext);
+      if (lang && !detected.includes(lang)) {
+        detected.push(lang);
+      }
     }
-  } catch {
-    // ignore read error
   }
 
-  return { defaultLocale: 'vi', supportedLocales: ['vi', 'en'] };
+  if (detected.length === 0) {
+    return { defaultLocale: 'vi', supportedLocales: ['vi', 'en'] };
+  }
+
+  const defaultLocale = detected.includes('vi')
+    ? 'vi'
+    : detected.includes('en')
+    ? 'en'
+    : detected[0];
+
+  return { defaultLocale, supportedLocales: detected };
 }
 
 /**
- * Tự động phát hiện framework i18n từ package.json
+ * Tự động phát hiện framework i18n trong package.json
  */
-export function autoDetectFramework(
-  rootDir: string = process.cwd()
-): { framework: 'next-intl' | 'react-i18next' | 'custom'; hook_name: string; import_source: string } {
+export function autoDetectFramework(rootDir: string = process.cwd()): {
+  framework: 'next-intl' | 'react-i18next' | 'custom';
+  hook_name: string;
+  import_source: string;
+} {
   const pkgPath = path.join(rootDir, 'package.json');
   if (fs.existsSync(pkgPath)) {
     try {
       const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
       const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+
       if (deps['next-intl']) {
         return {
           framework: 'next-intl',
@@ -116,6 +125,8 @@ export function autoDetectFramework(
       // ignore
     }
   }
+
+  // Mặc định cho Next.js hiện đại
   return {
     framework: 'next-intl',
     hook_name: 'useTranslations',
@@ -124,27 +135,19 @@ export function autoDetectFramework(
 }
 
 /**
- * Load và parse file config, thực hiện auto-detect nếu các trường được đặt là 'auto'
+ * Đọc, merge preset, và validate file cấu hình
  */
 export function loadConfig(
-  configPathOrDir?: string,
+  customConfigPath?: string,
   rootDir: string = process.cwd()
 ): { config: AgentLintConfig; resolvedConfigPath: string | null } {
-  let configPath: string | null = null;
+  let configPath = customConfigPath
+    ? path.resolve(rootDir, customConfigPath)
+    : findConfigFile(rootDir);
+
   let rawContent = '';
-
-  if (configPathOrDir && fs.existsSync(configPathOrDir)) {
-    const stat = fs.statSync(configPathOrDir);
-    if (stat.isFile()) {
-      configPath = path.resolve(configPathOrDir);
-    } else {
-      configPath = findConfigFile(configPathOrDir);
-    }
-  } else {
-    configPath = findConfigFile(rootDir);
-  }
-
   let parsedYaml: any = {};
+
   if (configPath && fs.existsSync(configPath)) {
     try {
       rawContent = fs.readFileSync(configPath, 'utf-8');
@@ -152,6 +155,20 @@ export function loadConfig(
     } catch (err: any) {
       throw new Error(`Failed to parse config file ${configPath}: ${err.message}`);
     }
+  }
+
+  // 1. Mở rộng Preset nếu có (preset ở root hoặc rules.architecture.preset)
+  const presetKey = parsedYaml.preset || parsedYaml.rules?.architecture?.preset;
+  if (presetKey && ARCHITECTURE_PRESETS[presetKey as keyof typeof ARCHITECTURE_PRESETS]) {
+    const presetDefaults = ARCHITECTURE_PRESETS[presetKey as keyof typeof ARCHITECTURE_PRESETS];
+    if (!parsedYaml.rules) parsedYaml.rules = {};
+    if (!parsedYaml.rules.architecture) parsedYaml.rules.architecture = {};
+
+    parsedYaml.rules.architecture = {
+      ...presetDefaults,
+      ...parsedYaml.rules.architecture,
+      preset: presetKey,
+    };
   }
 
   // Validate qua Zod với default values

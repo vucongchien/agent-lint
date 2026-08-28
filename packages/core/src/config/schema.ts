@@ -100,13 +100,51 @@ export const ComponentDeduplicationSchema = z.object({
   similarity_threshold: z.number().default(0.8),
 });
 
+export const LayerSchema = z.object({
+  name: z.string(),
+  path: z.string(),
+  can_import: z.array(z.string()).default([]),
+  disallowed_packages: z.array(z.string()).optional(),
+  message: z.string().optional(),
+});
+
+export const ServerClientBoundarySchema = z.object({
+  enabled: z.boolean().default(true),
+  client_identifiers: z.array(z.string()).default(['"use client"', "'use client'"]),
+  disallowed_imports: z.array(z.string()).default([
+    '@/lib/db',
+    'prisma',
+    '@prisma/client',
+    'server-only',
+    'fs',
+    'path',
+  ]),
+});
+
+export const PublicApiSchema = z.object({
+  enabled: z.boolean().default(true),
+  modules: z.array(z.string()).default([]),
+  entry_files: z.array(z.string()).default(['index.ts', 'index.tsx', 'index.js']),
+});
+
+export const ArchitectureRuleSchema = z.object({
+  enabled: z.boolean().default(true),
+  severity: z.enum(['warn', 'error', 'off']).default('error'),
+  preset: z.enum(['nextjs', 'clean-architecture', 'fsd', 'ddd', 'custom']).default('custom'),
+  allow_type_imports: z.boolean().default(true),
+  layers: z.array(LayerSchema).optional(),
+  server_client_boundary: ServerClientBoundarySchema.optional(),
+  public_api: PublicApiSchema.optional(),
+});
+
 export const AgentLintConfigSchema = z.object({
   version: z.string().default('1.0'),
+  preset: z.enum(['nextjs', 'clean-architecture', 'fsd', 'ddd', 'custom']).optional(),
   target: z.object({
-    include: z.array(z.string()).default(['src/**/*.{tsx,jsx}']),
+    include: z.array(z.string()).default(['src/**/*.{tsx,jsx,ts,js}']),
     exclude: z.array(z.string()).default([
-      '**/*.test.{tsx,jsx}',
-      '**/*.spec.{tsx,jsx}',
+      '**/*.test.{tsx,jsx,ts,js}',
+      '**/*.spec.{tsx,jsx,ts,js}',
       '**/node_modules/**',
       '**/.next/**',
       '**/dist/**',
@@ -117,6 +155,7 @@ export const AgentLintConfigSchema = z.object({
     design_tokens: DesignTokensRuleSchema.default({}),
     clean_composition: CleanCompositionSchema.optional(),
     component_deduplication: ComponentDeduplicationSchema.optional(),
+    architecture: ArchitectureRuleSchema.optional(),
   }).default({}),
 });
 
