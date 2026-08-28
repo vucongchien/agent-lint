@@ -6,6 +6,7 @@ import {
   formatConsoleReport,
   formatJsonReport,
   formatAgentPromptReport,
+  formatSarifReport,
 } from '@agent-lint/core';
 
 export interface ScanCommandOptions {
