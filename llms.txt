@@ -1,0 +1,69 @@
+# agent-lint
+
+> AI-Native Codebase & Architecture Governance Engine for React, Next.js & Fullstack TypeScript.
+
+`agent-lint` is an automated AST analysis and code transformation tool that enforces 1-Click Architecture Presets (Clean Architecture, FSD, DDD, Next.js App Router), auto-syncs i18n dictionaries, and governs Design Tokens.
+
+## Core Capabilities
+- **Architecture Presets**: Instant governance for Clean Architecture (Domain purity, no ORMs in entities), Feature-Sliced Design (unidirectional flow), DDD (Domain event purity), and Next.js Server/Client boundary isolation.
+- **i18n Automation**: AST extraction of static JSX text and dynamic template literals (`Hello ${user}`) into ICU message format, hook injection (`useTranslations()`), and real-time dictionary synchronization.
+- **Dead Translation Keys Cleaner**: Detects and prunes orphaned keys from translation dictionaries (`agent-lint clean-keys --prune`).
+- **Design Tokens & Component Governance**: Flags arbitrary colors/pixels, and automatically replaces raw HTML tags (`<button>`, `<a>`, `<img>`) with Design System custom components.
+- **Clean Page Composition**: Enforces composition-first Next.js pages (max DOM depth <= 3) and detects duplicate layout skeletons via the Rule of Three.
+- **Formats & AI Native**: Outputs actionable prompts for LLM coding agents (`--format=agent`) and OASIS SARIF v2.1.0 (`--format=sarif`) for Oxlint / GitHub CodeQL.
+
+## Installation & CLI Usage
+```bash
+# Install
+pnpm add -D agent-lint @chien_swe/core eslint-plugin-agent-lint
+npm install -D agent-lint @chien_swe/core eslint-plugin-agent-lint
+
+# Usage
+npx agent-lint init                  # Generate config
+npx agent-lint scan                  # Scan for violations
+npx agent-lint scan --format=agent   # AI Agent prompt format
+npx agent-lint scan --format=sarif   # SARIF report for CI
+npx agent-lint fix                   # Auto-fix code & sync dictionary
+npx agent-lint clean-keys --prune    # Clean unused dictionary keys
+```
+
+## Configuration (.agent-lint.yaml)
+```yaml
+version: "1.0"
+preset: "nextjs" # "nextjs" | "clean-architecture" | "fsd" | "ddd" | "custom"
+
+target:
+  include: ["src/**/*.{tsx,jsx,ts,js}"]
+  exclude: ["**/*.test.{tsx,ts}", "**/node_modules/**", "**/.next/**", "**/dist/**"]
+
+rules:
+  i18n:
+    enabled: true
+    locales: { dir: "auto", default: "auto", supported: "auto", file_format: "json" }
+  design_tokens:
+    enabled: true
+    enforce: { colors: true, spacing: true, font_sizes: true }
+    enforce_components:
+      enabled: true
+      restricted_elements:
+        button: { use: "Button", from: "@/components/ui/button" }
+        a: { use: "Link", from: "next/link" }
+        img: { use: "Image", from: "next/image" }
+  clean_composition:
+    enabled: true
+    targets: ["**/page.{tsx,jsx}", "**/layout.{tsx,jsx}"]
+    max_raw_jsx_depth: 3
+  component_deduplication:
+    enabled: true
+    min_occurrences: 3
+    similarity_threshold: 0.80
+  architecture:
+    enabled: true
+    preset: "nextjs"
+    severity: "error"
+    allow_type_imports: true
+```
+
+## Links & Repository
+- Repository: https://github.com/vucongchien/agent-lint
+- License: MIT
