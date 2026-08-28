@@ -13,6 +13,10 @@ import { transformI18nFile } from './i18n/transformer';
 import { LocaleFileManager } from './i18n/locales';
 import { scanTokenViolations } from './tokens/scanner';
 import { scanCssFileViolations } from './tokens/css-scanner';
+import {
+  scanRestrictedComponents,
+  transformRestrictedComponents,
+} from './tokens/component-enforcer';
 
 export interface EngineOptions {
   rootDir?: string;
@@ -107,6 +111,16 @@ export class AgentLintEngine {
             config: this.config.rules.design_tokens,
           });
           violations.push(...tokenViolations);
+
+          // 3. Scan Restricted Custom Components
+          if (this.config.rules.design_tokens.enforce_components?.enabled) {
+            const compViolations = scanRestrictedComponents({
+              filePath,
+              code,
+              config: this.config.rules.design_tokens.enforce_components,
+            });
+            violations.push(...compViolations);
+          }
         }
       }
     }
@@ -122,7 +136,7 @@ export class AgentLintEngine {
   }
 
   /**
-   * Tự động sửa các vi phạm i18n và cập nhật vào file từ điển
+   * Tự động sửa các vi phạm i18n và Custom Components
    */
   public fix(files?: string[]): FixResult {
     const scanRes = this.scan(files);
@@ -141,23 +155,42 @@ export class AgentLintEngine {
     for (const [filePath, fileViolations] of fileMap.entries()) {
       if (!fs.existsSync(filePath)) continue;
       const code = fs.readFileSync(filePath, 'utf-8');
+      let currentCode = code;
+      let fileChanged = false;
 
+      // 1. Fix i18n violations
       const i18nRule = this.config.rules.i18n;
       if (i18nRule.enabled) {
         const result = transformI18nFile({
           filePath,
-          code,
+          code: currentCode,
           violations: fileViolations,
           config: i18nRule,
           localeManager: this.localeManager,
         });
 
         if (result.hasChanged) {
-          fs.writeFileSync(filePath, result.code, 'utf-8');
-          filesModified.push(filePath);
+          currentCode = result.code;
+          fileChanged = true;
           keysAdded.push(...result.keysAdded);
           violationsFixed += fileViolations.filter((v) => v.ruleId === 'i18n-hardcoded').length;
         }
+      }
+
+      // 2. Fix restricted components
+      const compConfig = this.config.rules.design_tokens.enforce_components;
+      if (compConfig?.enabled) {
+        const compRes = transformRestrictedComponents(currentCode, fileViolations);
+        if (compRes.hasChanged) {
+          currentCode = compRes.code;
+          fileChanged = true;
+          violationsFixed += fileViolations.filter((v) => v.ruleId === 'restricted-element').length;
+        }
+      }
+
+      if (fileChanged) {
+        fs.writeFileSync(filePath, currentCode, 'utf-8');
+        filesModified.push(filePath);
       }
     }
 

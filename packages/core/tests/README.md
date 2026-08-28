@@ -21,6 +21,7 @@ Thư mục này chứa toàn bộ bộ unit test cho gói `@agent-lint/core`. M�
 | **`css-scanner.test.ts`** | `src/tokens/css-scanner.ts` | - Quét các file stylesheet rời (`.css`, `.scss`, `.module.css`) tìm mã hex và pixel thô.<br/>- Gợi ý thay thế bằng biến CSS `var(--...)`. |
 | **`heuristics.test.ts`** | `src/i18n/heuristics.ts` | - Phân loại chính xác chuỗi ngôn ngữ tự nhiên vs code kỹ thuật (CSS units, SVG paths, UUID, regex, email...).<br/>- Kiểm tra loại bỏ 100% false positives trên các thẻ và thuộc tính kỹ thuật. |
 | **`reporter.test.ts`** | `src/reporter/index.ts` | - Kiểm tra tính hợp lệ của định dạng OASIS SARIF v2.1.0 cho Oxlint và GitHub Code Scanning. |
+| **`component-enforcer.test.ts`** | `src/tokens/component-enforcer.ts` | - Phát hiện các thẻ HTML trần (`<button>`, `<a>`, `<img>`) bị hạn chế bởi Design System.<br/>- Tự động thay thế sang Custom Component (`<Button>`, `<Link>`, `<Image>`) và inject import.<br/>- Miễn trừ file định nghĩa component gốc. |
 | **`engine.test.ts`** | `src/engine.ts` | - Kiểm thử toàn diện luồng quét (Scan) và sửa tự động (Fix) đa file. |
 
 ---

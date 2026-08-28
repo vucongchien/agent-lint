@@ -177,6 +177,23 @@ rules:
     suggestion:
       auto_suggest: true
       color_tolerance: 0.85
+
+    # 3. Enforce Design System Custom Components
+    enforce_components:
+      enabled: true
+      severity: "error"
+      restricted_elements:
+        button:
+          use: "Button"
+          from: "@/components/ui/button"
+          message: "Use <Button /> from Design System instead of raw <button> tag."
+        a:
+          use: "Link"
+          from: "next/link"
+          message: "Use <Link /> from next/link for client-side navigation."
+        img:
+          use: "Image"
+          from: "next/image"
 ```
 
 ---

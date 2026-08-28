@@ -12,5 +12,6 @@ export * from './tokens/color-utils';
 export * from './tokens/tailwind-tokens';
 export * from './tokens/scanner';
 export * from './tokens/css-scanner';
+export * from './tokens/component-enforcer';
 export * from './reporter/index';
 export * from './engine';

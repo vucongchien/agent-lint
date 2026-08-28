@@ -53,6 +53,18 @@ export const DesignTokensSuggestionSchema = z.object({
   color_tolerance: z.number().default(0.85),
 });
 
+export const RestrictedElementSchema = z.object({
+  use: z.string(),
+  from: z.string(),
+  message: z.string().optional(),
+});
+
+export const EnforceComponentsSchema = z.object({
+  enabled: z.boolean().default(true),
+  severity: z.enum(['warn', 'error', 'off']).default('error'),
+  restricted_elements: z.record(RestrictedElementSchema).default({}),
+});
+
 export const DesignTokensRuleSchema = z.object({
   enabled: z.boolean().default(true),
   severity: z.enum(['warn', 'error', 'off']).default('warn'),
@@ -69,6 +81,7 @@ export const DesignTokensRuleSchema = z.object({
     line_heights: z.record(z.union([z.string(), z.number()])).optional(),
     z_indices: z.record(z.union([z.string(), z.number()])).optional(),
   }).optional(),
+  enforce_components: EnforceComponentsSchema.optional(),
 });
 
 export const AgentLintConfigSchema = z.object({

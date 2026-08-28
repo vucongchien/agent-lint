@@ -59,6 +59,18 @@ export interface CustomTokens {
   z_indices?: Record<string, string | number>;
 }
 
+export interface RestrictedElementConfig {
+  use: string;           // Tên custom component thay thế (ví dụ: "Button", "Image")
+  from: string;          // Đường dẫn import (ví dụ: "@/components/ui/button", "next/image")
+  message?: string;      // Thông báo giải thích lý do
+}
+
+export interface EnforceComponentsConfig {
+  enabled: boolean;
+  severity: Severity;
+  restricted_elements: Record<string, RestrictedElementConfig>;
+}
+
 export interface DesignTokensRuleConfig {
   enabled: boolean;
   severity: Severity;
@@ -66,6 +78,7 @@ export interface DesignTokensRuleConfig {
   enforce: DesignTokensEnforceConfig;
   suggestion: DesignTokensSuggestionConfig;
   tokens?: CustomTokens;
+  enforce_components?: EnforceComponentsConfig;
 }
 
 export interface AgentLintConfig {
@@ -88,17 +101,19 @@ export interface SourceLocation {
 }
 
 export interface Violation {
-  ruleId: 'i18n-hardcoded' | 'token-violation';
+  ruleId: 'i18n-hardcoded' | 'token-violation' | 'restricted-element';
   severity: Severity;
   message: string;
   file: string;
   loc: SourceLocation;
   rawText: string;
   suggestedFix?: {
-    type: 'replace' | 'wrap-hook' | 'token-replace';
+    type: 'replace' | 'wrap-hook' | 'token-replace' | 'replace-tag';
     replacement: string;
     generatedKey?: string;
     targetLocaleFiles?: string[];
+    importFrom?: string;
+    targetComponent?: string;
   };
   metadata?: Record<string, any>;
 }
