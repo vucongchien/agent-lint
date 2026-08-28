@@ -84,6 +84,22 @@ export const DesignTokensRuleSchema = z.object({
   enforce_components: EnforceComponentsSchema.optional(),
 });
 
+export const CleanCompositionSchema = z.object({
+  enabled: z.boolean().default(true),
+  severity: z.enum(['warn', 'error', 'off']).default('warn'),
+  targets: z.array(z.string()).default(['**/page.{tsx,jsx}', '**/layout.{tsx,jsx}', 'pages/**/*.{tsx,jsx}']),
+  max_raw_jsx_depth: z.number().default(3),
+  max_raw_element_ratio: z.number().default(0.6),
+});
+
+export const ComponentDeduplicationSchema = z.object({
+  enabled: z.boolean().default(true),
+  severity: z.enum(['warn', 'error', 'off']).default('warn'),
+  min_occurrences: z.number().default(3),
+  min_element_count: z.number().default(4),
+  similarity_threshold: z.number().default(0.8),
+});
+
 export const AgentLintConfigSchema = z.object({
   version: z.string().default('1.0'),
   target: z.object({
@@ -99,6 +115,8 @@ export const AgentLintConfigSchema = z.object({
   rules: z.object({
     i18n: I18nRuleSchema.default({}),
     design_tokens: DesignTokensRuleSchema.default({}),
+    clean_composition: CleanCompositionSchema.optional(),
+    component_deduplication: ComponentDeduplicationSchema.optional(),
   }).default({}),
 });
 

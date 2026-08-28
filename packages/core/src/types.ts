@@ -81,6 +81,22 @@ export interface DesignTokensRuleConfig {
   enforce_components?: EnforceComponentsConfig;
 }
 
+export interface CleanCompositionConfig {
+  enabled: boolean;
+  severity: Severity;
+  targets: string[];            // Pattern các file áp dụng (mặc định: ["**/page.{tsx,jsx}", "**/layout.{tsx,jsx}"])
+  max_raw_jsx_depth: number;    // Độ sâu tối đa của thẻ HTML trần (mặc định: 3)
+  max_raw_element_ratio: number; // Tỷ lệ thẻ HTML trần tối đa trong cây render (mặc định: 0.6)
+}
+
+export interface ComponentDeduplicationConfig {
+  enabled: boolean;
+  severity: Severity;
+  min_occurrences: number;      // Quy tắc số 3: Lặp lại từ 3 lần trở lên mới cảnh báo (mặc định: 3)
+  min_element_count: number;    // Số thẻ tối thiểu trong một khối để xét trùng (mặc định: 4)
+  similarity_threshold: number; // Ngưỡng giống nhau về class CSS (mặc định: 0.8)
+}
+
 export interface AgentLintConfig {
   version: string;
   target: {
@@ -90,6 +106,8 @@ export interface AgentLintConfig {
   rules: {
     i18n: I18nRuleConfig;
     design_tokens: DesignTokensRuleConfig;
+    clean_composition?: CleanCompositionConfig;
+    component_deduplication?: ComponentDeduplicationConfig;
   };
 }
 
@@ -101,7 +119,7 @@ export interface SourceLocation {
 }
 
 export interface Violation {
-  ruleId: 'i18n-hardcoded' | 'token-violation' | 'restricted-element';
+  ruleId: 'i18n-hardcoded' | 'token-violation' | 'restricted-element' | 'composition-violation' | 'duplicate-layout';
   severity: Severity;
   message: string;
   file: string;

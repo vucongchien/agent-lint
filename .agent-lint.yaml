@@ -73,3 +73,21 @@ rules:
         img:
           use: "Image"
           from: "next/image"
+
+  # 3. Clean Architecture: Composition-First Pages & Layouts
+  clean_composition:
+    enabled: true
+    severity: "warn"
+    targets:
+      - "**/page.{tsx,jsx}"
+      - "**/layout.{tsx,jsx}"
+    max_raw_jsx_depth: 3
+    max_raw_element_ratio: 0.6
+
+  # 4. Component & Layout Deduplication Advisor (Rule of Three)
+  component_deduplication:
+    enabled: true
+    severity: "warn"
+    min_occurrences: 3
+    min_element_count: 4
+    similarity_threshold: 0.80

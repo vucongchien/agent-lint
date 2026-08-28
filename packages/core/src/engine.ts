@@ -17,6 +17,8 @@ import {
   scanRestrictedComponents,
   transformRestrictedComponents,
 } from './tokens/component-enforcer';
+import { scanCompositionViolations } from './architecture/composition-scanner';
+import { scanDuplicateLayoutViolations } from './architecture/deduplication-scanner';
 
 export interface EngineOptions {
   rootDir?: string;
@@ -75,10 +77,12 @@ export class AgentLintEngine {
     const startTime = Date.now();
     const targetFiles = files && files.length > 0 ? files : this.getTargetFiles();
     const violations: Violation[] = [];
+    const scannedCodeList: { filePath: string; code: string }[] = [];
 
     for (const filePath of targetFiles) {
       if (!fs.existsSync(filePath)) continue;
       const code = fs.readFileSync(filePath, 'utf-8');
+      scannedCodeList.push({ filePath, code });
 
       const ext = path.extname(filePath).toLowerCase();
       const isCss = ['.css', '.scss', '.sass', '.less'].includes(ext);
@@ -122,7 +126,26 @@ export class AgentLintEngine {
             violations.push(...compViolations);
           }
         }
+
+        // 4. Scan Clean Composition in Page / Layout
+        if (this.config.rules.clean_composition?.enabled) {
+          const compViolations = scanCompositionViolations({
+            filePath,
+            code,
+            config: this.config.rules.clean_composition,
+          });
+          violations.push(...compViolations);
+        }
       }
+    }
+
+    // 5. Scan Component Deduplication across files (Rule of Three)
+    if (this.config.rules.component_deduplication?.enabled) {
+      const dedupViolations = scanDuplicateLayoutViolations(
+        scannedCodeList,
+        this.config.rules.component_deduplication
+      );
+      violations.push(...dedupViolations);
     }
 
     const endTime = Date.now();

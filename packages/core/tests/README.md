@@ -22,6 +22,8 @@ Thư mục này chứa toàn bộ bộ unit test cho gói `@agent-lint/core`. M�
 | **`heuristics.test.ts`** | `src/i18n/heuristics.ts` | - Phân loại chính xác chuỗi ngôn ngữ tự nhiên vs code kỹ thuật (CSS units, SVG paths, UUID, regex, email...).<br/>- Kiểm tra loại bỏ 100% false positives trên các thẻ và thuộc tính kỹ thuật. |
 | **`reporter.test.ts`** | `src/reporter/index.ts` | - Kiểm tra tính hợp lệ của định dạng OASIS SARIF v2.1.0 cho Oxlint và GitHub Code Scanning. |
 | **`component-enforcer.test.ts`** | `src/tokens/component-enforcer.ts` | - Phát hiện các thẻ HTML trần (`<button>`, `<a>`, `<img>`) bị hạn chế bởi Design System.<br/>- Tự động thay thế sang Custom Component (`<Button>`, `<Link>`, `<Image>`) và inject import.<br/>- Miễn trừ file định nghĩa component gốc. |
+| **`composition-scanner.test.ts`**| `src/architecture/composition-scanner.ts` | - Kiểm soát kiến trúc Composition-Only trong các file `page.tsx` và `layout.tsx`.<br/>- Phát hiện thẻ HTML trần lồng sâu ($> 3$ tầng) hoặc tỷ lệ HTML trần quá cao. |
+| **`deduplication-scanner.test.ts`**| `src/architecture/deduplication-scanner.ts` | - Nhận diện Component/Layout bị trùng cấu trúc và class CSS theo Quy tắc số 3 (Rule of Three).<br/>- Gợi ý tái cấu trúc thành Polymorphic / Variant Component. |
 | **`engine.test.ts`** | `src/engine.ts` | - Kiểm thử toàn diện luồng quét (Scan) và sửa tự động (Fix) đa file. |
 
 ---
