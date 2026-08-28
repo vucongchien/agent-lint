@@ -75,10 +75,10 @@ export function scanCompositionViolations(options: ScanCompositionOptions): Viol
 
         // Tính độ sâu lồng nhau của các thẻ HTML trần
         let depth = 1;
-        let p = path.parentPath;
+        let p: any = path.parentPath;
         while (p) {
           if (
-            p.isJSXElement() &&
+            p.isJSXElement?.() &&
             t.isJSXIdentifier(p.node.openingElement.name) &&
             isRawHtmlTag(p.node.openingElement.name.name)
           ) {
