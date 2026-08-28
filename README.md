@@ -16,23 +16,76 @@
 
 ## 💡 Overview
 
-Modern TypeScript & Next.js codebases often suffer from architectural drift and front-end inconsistencies:
-1. **Hardcoded UI Strings:** Unextracted copy in JSX prevents seamless localization (i18n) and ICU parameter interpolation.
-2. **Ad-hoc Styling & Rogue Values:** Arbitrary hex colors (`#1e293b`), pixel values (`p-[15px]`), and raw HTML tags break Design System consistency.
-3. **Architectural Drift:** Spaghetti page compositions, duplicate layouts, or prohibited database/ORM imports breaking Clean Architecture, FSD, or Next.js Server/Client boundaries.
+Modern TypeScript, React & Next.js codebases frequently suffer from **architectural drift** and **front-end inconsistencies**, especially when developed alongside AI coding assistants:
 
-**`agent-lint`** is a unified AST analysis & automated governance engine. It enforces 1-Click Architecture Presets (`clean-architecture`, `fsd`, `ddd`, `nextjs`), auto-syncs i18n dictionaries, and produces structured SARIF & AI Agent prompts (Cursor, Claude, Antigravity).
+1. **Architectural Drift & Leaks:** Database ORMs/framework decorators polluting pure Domain models, Use Cases bypassing Ports & Adapters, or server secrets leaking into Client Components (`'use client'`).
+2. **Hardcoded UI Strings & Dynamic Templates:** Unextracted copy in JSX and complex dynamic strings (`` `Hello ${user.name}` ``) preventing seamless localization (i18n).
+3. **Ad-hoc Styling & Design System Violations:** Rogue hex colors (`#1e293b`), arbitrary pixel values (`p-[15px]`), and raw HTML tags (`<button>`, `<a>`, `<img>`) bypassing Design System components.
+4. **Spaghetti Page Composition & Component Duplication:** Overly nested raw HTML in `page.tsx` and duplicated JSX skeletons copy-pasted across files.
+
+**`agent-lint`** is a unified AST analysis & automated governance engine designed to enforce enterprise engineering standards across all 3 tiers of your application with **zero false positives**, **1-Click Architecture Presets**, and **AI Agent native workflows**.
 
 ---
 
-## ✨ Features
+## 🏗️ 3-Tier Governance Architecture
 
-- **🏛️ 1-Click Architecture Presets:** Built-in governance for **Clean Architecture**, **Feature-Sliced Design (FSD)**, **DDD (Domain-Driven Design)**, and **Next.js App Router** Server/Client boundaries.
-- **⚡ Direct i18n Auto-Sync & ICU:** Converts hardcoded JSX text and dynamic template literals (`` `Hello ${user.name}` ``) into ICU translation keys, injects `useTranslations()` hooks, and appends entries directly to your dictionary files.
-- **🧹 Dead Translation Keys Cleaner:** Scans and prunes unused translation keys from dictionary files (`agent-lint clean-keys --prune`).
-- **🎨 Design Tokens & Custom Components:** Flags arbitrary colors/spacing in Tailwind classes and inline styles, while enforcing custom Design System components (`<Button>`, `<Link>`, `<Image>`).
-- **📐 Clean Page Composition & Deduplication:** Prevents deeply nested raw HTML in `page.tsx` and detects duplicate layout structures across components using the Rule of Three.
-- **🤖 AI Agent Native & SARIF:** Built-in `--format=agent` output and OASIS SARIF v2.1.0 report for Oxlint and GitHub CodeQL integration.
+```mermaid
+flowchart TD
+    subgraph Tier3 ["🏛️ TIER 3: SYSTEM ARCHITECTURE & BOUNDARIES"]
+        T3_1["1-Click Presets: clean-architecture | fsd | ddd | nextjs"]
+        T3_2["Domain Layer Purity (No ORMs / Frameworks in Domain)"]
+        T3_3["Ports & Adapters (Use Cases call interfaces only)"]
+        T3_4["Next.js Server/Client Boundary Isolation"]
+    end
+
+    subgraph Tier2 ["📐 TIER 2: CODE COMPOSITION & CLEAN CODE"]
+        T2_1["Composition-First Pages (Max raw DOM depth <= 3)"]
+        T2_2["Component Deduplication Advisor (Rule of Three)"]
+    end
+
+    subgraph Tier1 ["🎨 TIER 1: UI, I18N & DESIGN SYSTEM"]
+        T1_1["i18n Hardcode Scanner & Dynamic ICU Interpolation"]
+        T1_2["Dead Translation Keys Cleaner (agent-lint clean-keys --prune)"]
+        T1_3["Design Tokens (Tailwind, Inline styles, CSS/SCSS files)"]
+        T1_4["Custom Component Enforcer (<Button>, <Link>, <Image>)"]
+    end
+
+    Tier3 --> Tier2 --> Tier1
+```
+
+---
+
+## ✨ Key Features
+
+### 🏛️ 1. 1-Click Architecture Presets
+Apply international architectural standards instantly with a single config line:
+* **`preset: "clean-architecture"`**: Enforces $\text{Presentation} \rightarrow \text{Application} \rightarrow \text{Domain} \leftarrow \text{Infrastructure}$. Guarantees Domain entities remain pure TypeScript without ORMs (`@prisma/*`, `typeorm`, `mongoose`) or HTTP clients.
+* **`preset: "fsd"` (Feature-Sliced Design)**: Enforces strict unidirectional flow from $\text{shared} \rightarrow \text{entities} \rightarrow \text{features} \rightarrow \text{widgets} \rightarrow \text{pages} \rightarrow \text{app}$.
+* **`preset: "ddd"`**: Enforces Domain purity and ensures Domain Events remain free from Message Broker side-effects (`kafkajs`, `amqplib`, `ioredis`).
+* **`preset: "nextjs"`**: Automatically guards against server secrets leaking into Client Components (`'use client'`).
+* **Smart Type Exemption (`allow_type_imports: true`)**: Permissive toward pure TypeScript `import type { User } from '@/entities/user'` while strictly prohibiting runtime state/code couplings.
+
+### ⚡ 2. Direct i18n Auto-Sync & Dynamic ICU Interpolation
+* Automatically extracts static JSX strings and dynamic template literals:
+  - `` `Xin chào ${user.name}, bạn có ${count} thông báo` `` $\longrightarrow$ `{t('xin_chao_name_ban_co_count_thong_bao', { name: user.name, count })}` + `"Xin chào {name}, bạn có {count} thông báo"`.
+* Auto-injects `useTranslations()` / `useTranslation()` hooks and updates your JSON dictionary files (`locales/en.json`, `messages/vi.json`) in real time.
+
+### 🧹 3. Dead Translation Keys Cleaner
+* Scans your entire codebase to find unused translation keys in your dictionary files.
+* Automatically prunes orphaned keys with `agent-lint clean-keys --prune`.
+
+### 🎨 4. Design Tokens & Custom Component Enforcer
+* Flags arbitrary colors (`bg-[#1e293b]`), spacing (`p-[15px]`), and fonts in Tailwind classes, inline styles, and `.css`/`.scss`/`.module.css` stylesheet files.
+* Recommends closest matching tokens via $\Delta E$ (CIEDE2000) weighted color distance matching.
+* Restricts raw HTML tags (`<button>`, `<a>`, `<img>`) and auto-replaces them with Design System Custom Components (`<Button>`, `<Link>`, `<Image>`).
+
+### 📐 5. Clean Page Composition & Component Deduplication
+* **Composition-First Pages**: Ensures Next.js `page.tsx` and `layout.tsx` focus on composing high-level components rather than deeply nested raw DOM markup (max nesting depth $\le 3$).
+* **Rule of Three Deduplication**: Detects duplicate layout skeletons across components (AST subtree fingerprinting + Jaccard CSS class similarity $\ge 80\%$) and suggests refactoring into reusable variant components once repeated $\ge 3$ times.
+
+### 🤖 6. AI Agent Native & OASIS SARIF v2.1.0
+* Built-in `--format=agent` output generates structured, actionable refactoring prompts optimized for LLM coding agents (Antigravity, Cursor, Claude Code).
+* Supports **OASIS SARIF v2.1.0** for seamless integration with `oxlint` and GitHub CodeQL.
 
 ---
 
@@ -40,92 +93,38 @@ Modern TypeScript & Next.js codebases often suffer from architectural drift and 
 
 ```bash
 # pnpm
-pnpm add -D agent-lint eslint-plugin-agent-lint
+pnpm add -D agent-lint @chien_swe/core eslint-plugin-agent-lint
 
 # npm
-npm install --save-dev agent-lint eslint-plugin-agent-lint
+npm install --save-dev agent-lint @chien_swe/core eslint-plugin-agent-lint
 
 # yarn / bun
-yarn add -D agent-lint eslint-plugin-agent-lint
-bun add -d agent-lint eslint-plugin-agent-lint
+yarn add -D agent-lint @chien_swe/core eslint-plugin-agent-lint
+bun add -d agent-lint @chien_swe/core eslint-plugin-agent-lint
 ```
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start & CLI Cheatsheet
 
-### 1. Initialize Configuration
-Generate a `.agent-lint.yaml` with smart defaults:
 ```bash
+# 1. Initialize configuration with smart auto-detection
 npx agent-lint init
-```
 
-### 2. Scan for Violations
-```bash
-# Pretty terminal output
+# 2. Scan codebase (terminal output)
 npx agent-lint scan
 
-# Machine-readable JSON output (for CI)
-npx agent-lint scan --format=json
-
-# Actionable Markdown prompt (for AI Agents)
+# 3. Output actionable prompt for AI Agents (Cursor / Claude)
 npx agent-lint scan --format=agent
-```
 
-### 3. Automated Fix & Dictionary Sync
-```bash
-# Automatically extract strings, inject hooks, and update dictionary files
+# 4. Generate SARIF report for GitHub CodeQL / Oxlint
+npx agent-lint scan --format=sarif --output=report.sarif
+
+# 5. Automatically fix violations & sync translation files
 npx agent-lint fix
-```
 
-### 4. Find & Prune Dead Translation Keys
-```bash
-# Detect unused keys in dictionary files
-npx agent-lint clean-keys
-
-# Automatically prune orphaned keys from JSON files
+# 6. Detect and prune dead translation keys
 npx agent-lint clean-keys --prune
-```
-
----
-
-## 🔍 Before & After
-
-### Before `agent-lint fix`:
-```tsx
-// ❌ Hardcoded strings and arbitrary styling
-export function WelcomeBanner() {
-  return (
-    <div className="bg-[#1e293b] p-[15px]">
-      <h1>Welcome back!</h1>
-      <input placeholder="Search products..." />
-    </div>
-  );
-}
-```
-
-### After `agent-lint fix`:
-```tsx
-// ✅ Extracted, typed, and localized with Design Tokens
-import { useTranslations } from 'next-intl';
-
-export function WelcomeBanner() {
-  const t = useTranslations();
-  return (
-    <div className="bg-slate-800 p-4">
-      <h1>{t('welcome_back')}</h1>
-      <input placeholder={t('search_products')} />
-    </div>
-  );
-}
-```
-
-```json
-// ✅ locales/en.json (Automatically updated)
-{
-  "welcome_back": "Welcome back!",
-  "search_products": "Search products..."
-}
 ```
 
 ---
@@ -135,19 +134,23 @@ export function WelcomeBanner() {
 ```yaml
 version: "1.0"
 
+# 1-Click Architecture Preset: "nextjs" | "clean-architecture" | "fsd" | "ddd" | "custom"
+preset: "nextjs"
+
 target:
   include:
-    - "src/**/*.{tsx,jsx}"
+    - "src/**/*.{tsx,jsx,ts,js}"
   exclude:
-    - "**/*.test.{tsx,jsx}"
+    - "**/*.test.{tsx,jsx,ts,js}"
     - "**/node_modules/**"
     - "**/.next/**"
+    - "**/dist/**"
 
 rules:
-  # 1. i18n Rule
+  # 1. i18n Hardcode Extraction & ICU Message Format
   i18n:
     enabled: true
-    severity: "error" # "warn" | "error"
+    severity: "error"
     locales:
       dir: "auto" # Auto-detects 'messages', 'locales', 'src/locales'
       default: "auto"
@@ -158,9 +161,8 @@ rules:
       hook_name: "useTranslations"
       function_name: "t"
       auto_import: true
-      import_source: "next-intl"
     key_generation:
-      strategy: "slug" # "slug" | "camelCase" | "file_scoped" | "hash"
+      strategy: "slug"
       max_length: 40
     attributes:
       - "placeholder"
@@ -168,20 +170,19 @@ rules:
       - "alt"
       - "aria-label"
 
-  # 2. Design Tokens Rule
+  # 2. Design Tokens & Custom Components
   design_tokens:
     enabled: true
     severity: "warn"
     provider: "tailwind"
     enforce:
-      colors: true # Flags raw hex/rgb: bg-[#1e293b]
-      spacing: true # Flags raw pixels: p-[15px]
-      font_sizes: true # Flags raw font-size: text-[15px]
+      colors: true
+      spacing: true
+      font_sizes: true
     suggestion:
       auto_suggest: true
       color_tolerance: 0.85
 
-    # 3. Enforce Design System Custom Components
     enforce_components:
       enabled: true
       severity: "error"
@@ -189,16 +190,16 @@ rules:
         button:
           use: "Button"
           from: "@/components/ui/button"
-          message: "Use <Button /> from Design System instead of raw <button> tag."
+          message: "Please use <Button /> from Design System instead of raw <button> tag."
         a:
           use: "Link"
           from: "next/link"
-          message: "Use <Link /> from next/link for client-side navigation."
+          message: "Please use <Link /> from next/link for client-side navigation."
         img:
           use: "Image"
           from: "next/image"
 
-  # 3. Clean Architecture: Composition-First Pages & Layouts
+  # 3. Clean Architecture: Composition-First Pages
   clean_composition:
     enabled: true
     severity: "warn"
@@ -208,7 +209,7 @@ rules:
     max_raw_jsx_depth: 3
     max_raw_element_ratio: 0.6
 
-  # 4. Component & Layout Deduplication Advisor (Rule of Three)
+  # 4. Component & Layout Deduplication (Rule of Three)
   component_deduplication:
     enabled: true
     severity: "warn"
@@ -216,21 +217,28 @@ rules:
     min_element_count: 4
     similarity_threshold: 0.80
 
-  # 5. Architecture & Boundary Governance (Presets: nextjs | clean-architecture | fsd | ddd)
+  # 5. Architecture & Layer Boundary Governance
   architecture:
     enabled: true
     preset: "nextjs"
     severity: "error"
     allow_type_imports: true
+    server_client_boundary:
+      enabled: true
+      disallowed_imports:
+        - "@/lib/db"
+        - "prisma"
+        - "@prisma/client"
+        - "server-only"
+        - "fs"
+        - "path"
 ```
 
 ---
 
 ## 🔌 ESLint & Oxlint Integration
 
-### 1. ESLint Integration (ESLint 9 Flat Config)
-Add the plugin to your `eslint.config.mjs`:
-
+### 1. ESLint 9 Flat Config (`eslint.config.mjs`)
 ```js
 import agentLint from 'eslint-plugin-agent-lint';
 
@@ -247,19 +255,7 @@ export default [
 ];
 ```
 
-### 2. Oxlint & High-Performance CI Pipeline
-`agent-lint` supports the **OASIS SARIF v2.1.0** standard used by `oxlint` and GitHub Code Scanning.
-
-In your CI or `package.json`:
-```json
-{
-  "scripts": {
-    "lint:fast": "oxlint . && agent-lint scan",
-    "lint:sarif": "agent-lint scan --format=sarif --output=results.sarif"
-  }
-}
-```
-
+### 2. High-Speed CI with Oxlint & GitHub CodeQL
 ```yaml
 # .github/workflows/lint.yml
 - name: Run Oxlint & Agent-Lint
@@ -267,7 +263,7 @@ In your CI or `package.json`:
     npx oxlint .
     npx agent-lint scan --format=sarif --output=agent-lint.sarif
 
-- name: Upload SARIF report
+- name: Upload SARIF report to GitHub Security
   uses: github/codeql-action/upload-sarif@v3
   with:
     sarif_file: agent-lint.sarif
@@ -275,35 +271,13 @@ In your CI or `package.json`:
 
 ---
 
-## 🤖 AI Agent Workflow (`SKILL.md`)
-
-`agent-lint` includes a preconfigured skill definition at `skills/agent-lint/SKILL.md`.
-
-When delegating refactoring to an AI Agent:
-1. Run `npx agent-lint scan --format=agent`.
-2. The agent parses the structured action report.
-3. The agent executes `npx agent-lint fix` or contextual key refinements.
-4. The agent verifies with `npx agent-lint scan` until 0 errors remain.
-
----
-
-## 📂 Recommended Project Layouts
-
-| Architecture | Locales Path | Framework |
-| :--- | :--- | :--- |
-| **Next.js App Router** | `messages/[locale].json` | `next-intl` |
-| **Next.js Pages Router** | `public/locales/[locale]/common.json` | `next-i18next` |
-| **React (Vite / CRA)** | `src/locales/[locale].json` | `react-i18next` |
-
----
-
-## 🧪 Testing
+## 🧪 Testing & Quality Assurance
 
 ```bash
-# Run unit tests
+# Run unit tests across all 19 test suites
 pnpm test
 
-# Run build
+# Build monorepo packages
 pnpm build
 ```
 
