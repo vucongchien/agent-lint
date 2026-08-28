@@ -1,35 +1,38 @@
 # agent-lint
 
 <p align="center">
-  <strong>AI-Native Linter & Auto-Sync Engine for i18n and Design Tokens in React & Next.js</strong>
+  <strong>AI-Native Codebase & Architecture Governance Engine for React, Next.js & Fullstack TypeScript</strong>
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/agent-lint"><img src="https://img.shields.io/npm/v/agent-lint.svg?color=blue" alt="npm version"></a>
-  <a href="https://github.com/vucongchien/agent-lint/actions"><img src="https://img.shields.io/badge/tests-29%20passed-brightgreen" alt="Tests"></a>
+  <a href="https://github.com/vucongchien/agent-lint/actions/workflows/ci.yml"><img src="https://github.com/vucongchien/agent-lint/actions/workflows/ci.yml/badge.svg" alt="CI Status"></a>
+  <a href="https://github.com/vucongchien/agent-lint/actions"><img src="https://img.shields.io/badge/tests-54%20passed-brightgreen" alt="Tests"></a>
+  <a href="https://www.npmjs.com/package/agent-lint"><img src="https://img.shields.io/badge/npm-v0.1.0-blue" alt="npm version"></a>
   <a href="https://github.com/vucongchien/agent-lint/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
-  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.x-blue" alt="TypeScript"></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.9+-blue" alt="TypeScript"></a>
 </p>
 
 ---
 
 ## 💡 Overview
 
-Modern frontend codebases often suffer from two major scaling issues:
-1. **Hardcoded UI Strings:** Unextracted copy in JSX prevents seamless localization (i18n) and costs weeks of manual refactoring during international expansion.
-2. **Ad-hoc Styling & Rogue Values:** Arbitrary hex colors (`#1e293b`) and ad-hoc pixels (`p-[15px]`) break Design System consistency.
+Modern TypeScript & Next.js codebases often suffer from architectural drift and front-end inconsistencies:
+1. **Hardcoded UI Strings:** Unextracted copy in JSX prevents seamless localization (i18n) and ICU parameter interpolation.
+2. **Ad-hoc Styling & Rogue Values:** Arbitrary hex colors (`#1e293b`), pixel values (`p-[15px]`), and raw HTML tags break Design System consistency.
+3. **Architectural Drift:** Spaghetti page compositions, duplicate layouts, or prohibited database/ORM imports breaking Clean Architecture, FSD, or Next.js Server/Client boundaries.
 
-**`agent-lint`** is a high-performance AST linter and automated code transformer. It detects hardcoded text and design token violations with **zero false positives**, automatically syncs translation keys directly into your locale dictionary files (`locales/en.json`, `messages/vi.json`), and provides structured outputs tailored for **AI Coding Agents** (Antigravity, Cursor, Claude Code).
+**`agent-lint`** is a unified AST analysis & automated governance engine. It enforces 1-Click Architecture Presets (`clean-architecture`, `fsd`, `ddd`, `nextjs`), auto-syncs i18n dictionaries, and produces structured SARIF & AI Agent prompts (Cursor, Claude, Antigravity).
 
 ---
 
 ## ✨ Features
 
-- **⚡ Direct i18n Auto-Sync:** Converts hardcoded JSX text and attributes (`placeholder`, `title`, `aria-label`) into translation keys, injects `useTranslations()` / `useTranslation()` hooks, and appends entries directly to your dictionary files.
-- **🎨 Design Token Enforcement:** Flags arbitrary colors and spacing in Tailwind classes and inline styles, recommending the nearest token via $\Delta E$ (CIEDE2000) color distance matching.
-- **🎯 Zero False Positives (Semantic Heuristics):** Intelligently ignores non-user-facing props (`id`, `key`, `type`, `className`), technical tags (`<svg>`, `<code>`, `<pre>`), CSS units, URLs, UUIDs, and CSS variables (`var(--...)`).
-- **🤖 AI Agent Native:** Built-in `--format=agent` output and ready-to-use `SKILL.md` for seamless autonomous refactoring.
-- **🔌 Dual Ecosystem:** Run as a standalone CLI or integrate into your IDE via `eslint-plugin-agent-lint`.
+- **🏛️ 1-Click Architecture Presets:** Built-in governance for **Clean Architecture**, **Feature-Sliced Design (FSD)**, **DDD (Domain-Driven Design)**, and **Next.js App Router** Server/Client boundaries.
+- **⚡ Direct i18n Auto-Sync & ICU:** Converts hardcoded JSX text and dynamic template literals (`` `Hello ${user.name}` ``) into ICU translation keys, injects `useTranslations()` hooks, and appends entries directly to your dictionary files.
+- **🧹 Dead Translation Keys Cleaner:** Scans and prunes unused translation keys from dictionary files (`agent-lint clean-keys --prune`).
+- **🎨 Design Tokens & Custom Components:** Flags arbitrary colors/spacing in Tailwind classes and inline styles, while enforcing custom Design System components (`<Button>`, `<Link>`, `<Image>`).
+- **📐 Clean Page Composition & Deduplication:** Prevents deeply nested raw HTML in `page.tsx` and detects duplicate layout structures across components using the Rule of Three.
+- **🤖 AI Agent Native & SARIF:** Built-in `--format=agent` output and OASIS SARIF v2.1.0 report for Oxlint and GitHub CodeQL integration.
 
 ---
 
