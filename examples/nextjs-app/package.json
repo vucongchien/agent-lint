@@ -1,0 +1,15 @@
+{
+  "name": "nextjs-app-example",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "lint:scan": "node ../../packages/cli/dist/bin.mjs scan",
+    "lint:agent": "node ../../packages/cli/dist/bin.mjs scan --format=agent",
+    "lint:fix": "node ../../packages/cli/dist/bin.mjs fix"
+  },
+  "dependencies": {
+    "next-intl": "^3.26.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}

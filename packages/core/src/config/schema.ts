@@ -1,0 +1,93 @@
+import { z } from 'zod';
+
+export const I18nLocalesSchema = z.object({
+  dir: z.string().default('auto'),
+  default: z.string().default('auto'),
+  supported: z.union([z.array(z.string()), z.literal('auto')]).default('auto'),
+  file_format: z.enum(['json', 'nested-json', 'ts', 'js']).default('json'),
+});
+
+export const I18nIntegrationSchema = z.object({
+  framework: z.enum(['auto', 'next-intl', 'react-i18next', 'custom']).default('auto'),
+  hook_name: z.string().default('useTranslations'),
+  function_name: z.string().default('t'),
+  auto_import: z.boolean().default(true),
+  import_source: z.string().default('next-intl'),
+});
+
+export const I18nKeyGenSchema = z.object({
+  strategy: z.enum(['slug', 'camelCase', 'file_scoped', 'hash']).default('slug'),
+  max_length: z.number().default(40),
+  prefix: z.string().default(''),
+});
+
+export const I18nRuleSchema = z.object({
+  enabled: z.boolean().default(true),
+  severity: z.enum(['warn', 'error', 'off']).default('error'),
+  locales: I18nLocalesSchema.default({}),
+  integration: I18nIntegrationSchema.default({}),
+  key_generation: I18nKeyGenSchema.default({}),
+  attributes: z.array(z.string()).default(['placeholder', 'title', 'alt', 'aria-label', 'aria-description']),
+  whitelist: z.array(z.string()).default(['&times;', 'OK', 'Beta']),
+  ignore_patterns: z.array(z.string()).default([
+    '^[0-9]+$',
+    '^[\\s\\-_/|:,.]+$',
+    '^https?://',
+    '^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$',
+  ]),
+});
+
+export const DesignTokensEnforceSchema = z.object({
+  colors: z.boolean().default(true),
+  spacing: z.boolean().default(true),
+  font_sizes: z.boolean().default(true),
+  radii: z.boolean().default(true),
+  shadows: z.boolean().default(true),
+  font_weights: z.boolean().default(true),
+  line_heights: z.boolean().default(true),
+  z_indices: z.boolean().default(true),
+});
+
+export const DesignTokensSuggestionSchema = z.object({
+  auto_suggest: z.boolean().default(true),
+  color_tolerance: z.number().default(0.85),
+});
+
+export const DesignTokensRuleSchema = z.object({
+  enabled: z.boolean().default(true),
+  severity: z.enum(['warn', 'error', 'off']).default('warn'),
+  provider: z.enum(['tailwind', 'custom', 'css-variables']).default('tailwind'),
+  enforce: DesignTokensEnforceSchema.default({}),
+  suggestion: DesignTokensSuggestionSchema.default({}),
+  tokens: z.object({
+    colors: z.record(z.string()).optional(),
+    spacing: z.record(z.union([z.string(), z.number()])).optional(),
+    font_sizes: z.record(z.union([z.string(), z.number()])).optional(),
+    radii: z.record(z.union([z.string(), z.number()])).optional(),
+    shadows: z.record(z.string()).optional(),
+    font_weights: z.record(z.union([z.string(), z.number()])).optional(),
+    line_heights: z.record(z.union([z.string(), z.number()])).optional(),
+    z_indices: z.record(z.union([z.string(), z.number()])).optional(),
+  }).optional(),
+});
+
+export const AgentLintConfigSchema = z.object({
+  version: z.string().default('1.0'),
+  target: z.object({
+    include: z.array(z.string()).default(['src/**/*.{tsx,jsx}']),
+    exclude: z.array(z.string()).default([
+      '**/*.test.{tsx,jsx}',
+      '**/*.spec.{tsx,jsx}',
+      '**/node_modules/**',
+      '**/.next/**',
+      '**/dist/**',
+    ]),
+  }).default({}),
+  rules: z.object({
+    i18n: I18nRuleSchema.default({}),
+    design_tokens: DesignTokensRuleSchema.default({}),
+  }).default({}),
+});
+
+export type AgentLintConfigInput = z.input<typeof AgentLintConfigSchema>;
+export type AgentLintConfigOutput = z.infer<typeof AgentLintConfigSchema>;

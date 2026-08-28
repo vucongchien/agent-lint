@@ -1,0 +1,58 @@
+version: "1.0"
+target:
+  include:
+    - "src/**/*.{tsx,jsx}"
+  exclude:
+    - "**/*.test.{tsx,jsx}"
+    - "**/node_modules/**"
+    - "**/.next/**"
+    - "**/dist/**"
+
+rules:
+  # 1. i18n Hardcode Detection & Auto-Sync
+  i18n:
+    enabled: true
+    severity: "error"
+    locales:
+      dir: "auto"
+      default: "auto"
+      supported: "auto"
+      file_format: "json"
+    integration:
+      framework: "auto"
+      hook_name: "useTranslations"
+      function_name: "t"
+      auto_import: true
+      import_source: "next-intl"
+    key_generation:
+      strategy: "slug"
+      max_length: 40
+      prefix: ""
+    attributes:
+      - "placeholder"
+      - "title"
+      - "alt"
+      - "aria-label"
+      - "aria-description"
+    whitelist:
+      - "&times;"
+      - "OK"
+      - "Beta"
+    ignore_patterns:
+      - "^[0-9]+$"
+      - "^[\\s\\-_/|:,.]+$"
+      - "^https?://"
+      - "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"
+
+  # 2. Design Token Compliance
+  design_tokens:
+    enabled: true
+    severity: "warn"
+    provider: "tailwind"
+    enforce:
+      colors: true
+      spacing: true
+      font_sizes: true
+    suggestion:
+      auto_suggest: true
+      color_tolerance: 0.85

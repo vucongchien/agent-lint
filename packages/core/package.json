@@ -1,0 +1,35 @@
+{
+  "name": "@agent-lint/core",
+  "version": "0.1.0",
+  "description": "Core AST analysis and auto-fix engine for i18n and design tokens",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@babel/generator": "^7.26.5",
+    "@babel/parser": "^7.26.7",
+    "@babel/traverse": "^7.26.7",
+    "@babel/types": "^7.26.7",
+    "fast-glob": "^3.3.3",
+    "magic-string": "^0.30.17",
+    "picocolors": "^1.1.1",
+    "yaml": "^2.7.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/babel__generator": "^7.6.8",
+    "@types/babel__traverse": "^7.20.6"
+  }
+}

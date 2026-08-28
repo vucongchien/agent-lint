@@ -1,0 +1,45 @@
+version: "1.0"
+target:
+  include:
+    - "src/**/*.{tsx,jsx}"
+  exclude:
+    - "**/*.test.{tsx,jsx}"
+    - "**/node_modules/**"
+
+rules:
+  i18n:
+    enabled: true
+    severity: "error"
+    locales:
+      dir: "locales"
+      default: "vi"
+      supported:
+        - "vi"
+        - "en"
+      file_format: "json"
+    integration:
+      framework: "next-intl"
+      hook_name: "useTranslations"
+      function_name: "t"
+      auto_import: true
+      import_source: "next-intl"
+    key_generation:
+      strategy: "slug"
+      max_length: 40
+    attributes:
+      - "placeholder"
+      - "title"
+      - "alt"
+      - "aria-label"
+
+  design_tokens:
+    enabled: true
+    severity: "warn"
+    provider: "tailwind"
+    enforce:
+      colors: true
+      spacing: true
+      font_sizes: true
+    suggestion:
+      auto_suggest: true
+      color_tolerance: 0.85

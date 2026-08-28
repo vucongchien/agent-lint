@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Test temp & coverage
+__temp_*
+coverage/
+*.log
+
+# Environment & OS
+.env
+.env.*
+.DS_Store
+Thumbs.db
