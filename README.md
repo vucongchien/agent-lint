@@ -129,6 +129,89 @@ npx agent-lint clean-keys --prune
 
 ---
 
+## ⚡ Visual Demos & Code Examples (Before vs After)
+
+### 1. ⚡ 1-Second Auto-Fix (i18n, Dynamic ICU, Design Tokens & Custom Component)
+Run `npx agent-lint fix` to turn ad-hoc dirty markup into clean, localized, design-system compliant code:
+
+```tsx
+// ❌ BEFORE (Ad-hoc strings, dynamic template literals, rogue hex colors, raw HTML tags)
+export function UserProfileHeader({ user, unreadCount }) {
+  return (
+    <div className="bg-[#1e293b] p-[15px]">
+      <h1>{`Xin chào ${user.name}, bạn có ${unreadCount} thông báo mới!`}</h1>
+      <button onClick={user.logout}>Đăng xuất</button>
+    </div>
+  );
+}
+```
+$$\Big\Downarrow \text{ npx agent-lint fix }$$
+```tsx
+// ✅ AFTER (Auto-injected hooks, ICU dynamic parameters, nearest Tailwind token, Design System Button)
+import { useTranslations } from 'next-intl';
+import { Button } from '@/components/ui/button';
+
+export function UserProfileHeader({ user, unreadCount }) {
+  const t = useTranslations();
+  return (
+    <div className="bg-slate-800 p-4">
+      <h1>{t('xin_chao_name_ban_co_unread_count_thong_bao_moi', { name: user.name, unreadCount })}</h1>
+      <Button onClick={user.logout}>{t('dang_xuat')}</Button>
+    </div>
+  );
+}
+```
+```json
+// 📁 messages/vi.json (Automatically appended in real-time)
+{
+  "xin_chao_name_ban_co_unread_count_thong_bao_moi": "Xin chào {name}, bạn có {unreadCount} thông báo mới!",
+  "dang_xuat": "Đăng xuất"
+}
+```
+
+---
+
+### 2. 🏛️ Architectural Boundary & Domain Purity Governance
+Instantly catch AI coding assistants contaminating pure Domain layers or leaking Server secrets into Client Components:
+
+```typescript
+// ❌ src/domain/entities/Order.ts (AI contaminated Domain with TypeORM/Prisma)
+import { Entity, Column } from 'typeorm'; // 🚨 PROHIBITED IN DOMAIN
+
+// ❌ src/app/dashboard/profile.client.tsx (Secret server leak in Client Component)
+"use client";
+import { prisma } from '@/lib/db'; // 🚨 PROHIBITED IN CLIENT COMPONENT
+```
+```text
+  error  src/domain/entities/Order.ts:1:1
+         ↳ Domain Purity Violation: Layer "domain" is prohibited from importing "typeorm".
+         ↳ Rule: Domain layer must remain pure TypeScript without ORM/framework dependencies.
+
+  error  src/app/dashboard/profile.client.tsx:2:1
+         ↳ Server/Client Boundary Violation: Client Component cannot import server module "@/lib/db".
+```
+
+---
+
+### 3. 📐 Composition-First Pages & Layouts (No Spaghetti Pages)
+Enforces that `page.tsx` acts solely as an orchestrator of high-level components:
+
+```tsx
+// ❌ src/app/dashboard/page.tsx (Spaghetti Markup: 5-level deep raw HTML)
+export default function Page() {
+  return (
+    <main><div><section><div><ul><li>Deep Nested List</li></ul></div></section></div></main>
+  );
+}
+```
+```text
+  warn   src/app/dashboard/page.tsx:3:5
+         ↳ Composition Violation: Page contains deeply nested raw HTML (depth: 5 > max: 3).
+         ↳ Suggestion: Refactor raw HTML blocks into dedicated custom components (<DashboardStats />, <RecentActivity />).
+```
+
+---
+
 ## ⚙️ Configuration (`.agent-lint.yaml`)
 
 ```yaml
