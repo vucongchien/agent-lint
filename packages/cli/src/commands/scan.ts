@@ -10,7 +10,7 @@ import {
 
 export interface ScanCommandOptions {
   config?: string;
-  format?: 'pretty' | 'json' | 'agent';
+  format?: 'pretty' | 'json' | 'agent' | 'sarif';
   output?: string;
 }
 
@@ -26,6 +26,8 @@ export function scanCommand(files: string[], options: ScanCommandOptions) {
     let outputContent = '';
     if (format === 'json') {
       outputContent = formatJsonReport(result);
+    } else if (format === 'sarif') {
+      outputContent = formatSarifReport(result);
     } else if (format === 'agent') {
       outputContent = formatAgentPromptReport(result);
     } else {

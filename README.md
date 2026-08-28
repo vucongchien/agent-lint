@@ -172,9 +172,10 @@ rules:
 
 ---
 
-## 🔌 ESLint Integration
+## 🔌 ESLint & Oxlint Integration
 
-Add the plugin to your `eslint.config.mjs` (ESLint 9 Flat Config):
+### 1. ESLint Integration (ESLint 9 Flat Config)
+Add the plugin to your `eslint.config.mjs`:
 
 ```js
 import agentLint from 'eslint-plugin-agent-lint';
@@ -190,6 +191,32 @@ export default [
     },
   },
 ];
+```
+
+### 2. Oxlint & High-Performance CI Pipeline
+`agent-lint` supports the **OASIS SARIF v2.1.0** standard used by `oxlint` and GitHub Code Scanning.
+
+In your CI or `package.json`:
+```json
+{
+  "scripts": {
+    "lint:fast": "oxlint . && agent-lint scan",
+    "lint:sarif": "agent-lint scan --format=sarif --output=results.sarif"
+  }
+}
+```
+
+```yaml
+# .github/workflows/lint.yml
+- name: Run Oxlint & Agent-Lint
+  run: |
+    npx oxlint .
+    npx agent-lint scan --format=sarif --output=agent-lint.sarif
+
+- name: Upload SARIF report
+  uses: github/codeql-action/upload-sarif@v3
+  with:
+    sarif_file: agent-lint.sarif
 ```
 
 ---

@@ -95,3 +95,65 @@ export function formatAgentPromptReport(result: ScanResult): string {
 
   return md;
 }
+
+/**
+ * Định dạng báo cáo chuẩn SARIF v2.1.0 (Static Analysis Results Interchange Format)
+ * Chuẩn định dạng được hỗ trợ bởi Oxlint, GitHub Actions Code Scanning và SonarQube.
+ */
+export function formatSarifReport(result: ScanResult): string {
+  const { violations } = result;
+
+  const sarif = {
+    $schema: 'https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json',
+    version: '2.1.0',
+    runs: [
+      {
+        tool: {
+          driver: {
+            name: 'agent-lint',
+            version: '0.1.0',
+            informationUri: 'https://github.com/vucongchien/agent-lint',
+            rules: [
+              {
+                id: 'i18n-hardcoded',
+                shortDescription: { text: 'Hardcoded user-facing string detected in JSX' },
+                helpUri: 'https://github.com/vucongchien/agent-lint#features',
+                defaultConfiguration: { level: 'error' },
+              },
+              {
+                id: 'token-violation',
+                shortDescription: { text: 'Design token compliance violation' },
+                helpUri: 'https://github.com/vucongchien/agent-lint#features',
+                defaultConfiguration: { level: 'warning' },
+              },
+            ],
+          },
+        },
+        results: violations.map((v) => ({
+          ruleId: v.ruleId,
+          level: v.severity === 'error' ? 'error' : 'warning',
+          message: {
+            text: v.message + (v.suggestedFix?.replacement ? ` (Suggested: ${v.suggestedFix.replacement})` : ''),
+          },
+          locations: [
+            {
+              physicalLocation: {
+                artifactLocation: {
+                  uri: v.file.replace(/\\/g, '/'),
+                },
+                region: {
+                  startLine: v.loc.line,
+                  startColumn: v.loc.column,
+                  endLine: v.loc.line,
+                  endColumn: v.loc.column + (v.rawText?.length || 1),
+                },
+              },
+            },
+          ],
+        })),
+      },
+    ],
+  };
+
+  return JSON.stringify(sarif, null, 2);
+}

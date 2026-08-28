@@ -23,7 +23,7 @@ program
   .command('scan [files...]')
   .description('Scan project or specific files for violations')
   .option('-c, --config <path>', 'Path to custom config file')
-  .option('--format <format>', 'Output format: pretty | json | agent', 'pretty')
+  .option('--format <format>', 'Output format: pretty | json | agent | sarif', 'pretty')
   .option('-o, --output <file>', 'Save output report to file')
   .action((files, options) => {
     scanCommand(files, options);
