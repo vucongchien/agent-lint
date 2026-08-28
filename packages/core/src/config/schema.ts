@@ -147,6 +147,8 @@ export const DesignCraftSchema = z.object({
   no_eyebrow_kicker: z.boolean().default(true),
   no_fake_pulse_dot: z.boolean().default(true),
   no_ghost_card: z.boolean().default(true),
+  optical_kerning: z.boolean().default(true),
+  dark_mode_optical_compensation: z.boolean().default(true),
 });
 
 export const AgentLintConfigSchema = z.object({

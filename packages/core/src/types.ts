@@ -132,13 +132,15 @@ export interface ArchitectureRuleConfig {
 export interface DesignCraftConfig {
   enabled: boolean;
   severity: Severity;
-  no_side_accent_border?: boolean; // Cấm viền màu dày 1 bên mép card
-  no_gradient_text?: boolean;      // Cấm chữ dải màu lòe loẹt
-  no_glowing_shadows?: boolean;    // Cấm bóng đổ phát sáng màu mè
-  no_nested_cards?: boolean;       // Cấm card lồng trong card
-  no_eyebrow_kicker?: boolean;     // Cấm nhãn in hoa đè trên heading
-  no_fake_pulse_dot?: boolean;     // Cấm animate-ping/pulse trên status dot tĩnh
-  no_ghost_card?: boolean;         // Cấm vừa viền dày vừa bóng mờ trên cùng 1 card
+  no_side_accent_border?: boolean;           // Cấm viền màu dày 1 bên mép card
+  no_gradient_text?: boolean;                // Cấm chữ dải màu lòe loẹt
+  no_glowing_shadows?: boolean;              // Cấm bóng đổ phát sáng màu mè
+  no_nested_cards?: boolean;                 // Cấm card lồng trong card
+  no_eyebrow_kicker?: boolean;               // Cấm nhãn in hoa đè trên heading
+  no_fake_pulse_dot?: boolean;               // Cấm animate-ping/pulse trên status dot tĩnh
+  no_ghost_card?: boolean;                   // Cấm vừa viền dày vừa bóng mờ trên cùng 1 card
+  optical_kerning?: boolean;                 // Chữ càng nhỏ thì tracking/kerning phải càng rộng (tránh dính nét)
+  dark_mode_optical_compensation?: boolean;  // Giảm 1 bậc font-weight/kích thước trong Dark Mode (quang sai phát xạ)
 }
 
 export interface AgentLintConfig {
@@ -182,7 +184,9 @@ export interface Violation {
     | 'nested-cards'
     | 'eyebrow-kicker'
     | 'fake-pulse-dot'
-    | 'ghost-card';
+    | 'ghost-card'
+    | 'optical-kerning'
+    | 'dark-mode-optical-compensation';
   severity: Severity;
   message: string;
   file: string;

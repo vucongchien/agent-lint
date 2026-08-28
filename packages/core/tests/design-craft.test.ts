@@ -171,4 +171,48 @@ describe('Design Craft & Visual Quality Scanner (Anti-AI Slop)', () => {
     expect(violations.length).toBe(1);
     expect(violations[0].ruleId).toBe('ghost-card');
   });
+
+  it('should flag optical kerning errors (negative tracking on small text)', () => {
+    const code = `
+      export function SmallBadge() {
+        return (
+          <span className="text-xs tracking-tight font-medium">
+            Colliding glyphs
+          </span>
+        );
+      }
+    `;
+
+    const violations = scanDesignCraftViolations({
+      filePath: 'src/components/Badge.tsx',
+      code,
+      config,
+    });
+
+    expect(violations.length).toBe(1);
+    expect(violations[0].ruleId).toBe('optical-kerning');
+    expect(violations[0].message).toContain('Small text sizes (text-xs / ≤12px) require neutral or expanded letter-spacing');
+  });
+
+  it('should flag dark mode optical compensation violations (same heavy bold in dark mode)', () => {
+    const code = `
+      export function HeavyHeader() {
+        return (
+          <h2 className="font-bold dark:font-bold text-slate-900 dark:text-white">
+            Uncompensated Glare
+          </h2>
+        );
+      }
+    `;
+
+    const violations = scanDesignCraftViolations({
+      filePath: 'src/components/HeavyHeader.tsx',
+      code,
+      config,
+    });
+
+    expect(violations.length).toBe(1);
+    expect(violations[0].ruleId).toBe('dark-mode-optical-compensation');
+    expect(violations[0].message).toContain('Due to visual irradiation, bright text on dark backgrounds appears ~10% heavier');
+  });
 });

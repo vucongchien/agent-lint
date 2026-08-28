@@ -269,6 +269,82 @@ export function scanDesignCraftViolations(options: ScanDesignCraftOptions): Viol
           });
         }
       }
+
+      // 8. Kiểm tra Optical Kerning & Tracking (Chữ nhỏ thì kerning/tracking phải càng rộng)
+      if (config.optical_kerning !== false) {
+        const isSmallText = classes.some((c) =>
+          /text-(?:xs|\[10px\]|\[11px\]|\[12px\])/.test(c)
+        );
+        const hasNegativeTracking = classes.some((c) =>
+          /tracking-(?:tight|tighter|\[-[^\]]+\])/.test(c)
+        );
+        const isUppercase = classes.includes('uppercase');
+        const hasNoPositiveTracking = !classes.some((c) =>
+          /tracking-(?:wide|wider|widest)/.test(c)
+        );
+
+        // Trường hợp A: Chữ nhỏ mà bị co tracking âm -> Dính nét, rất khó đọc
+        if (isSmallText && hasNegativeTracking) {
+          violations.push({
+            ruleId: 'optical-kerning',
+            severity: config.severity,
+            message:
+              'Optical Typography: Small text sizes (text-xs / ≤12px) require neutral or expanded letter-spacing (tracking-normal / tracking-wide). Avoid negative tracking (tracking-tight) to prevent illegible glyph collisions.',
+            file: filePath,
+            loc: {
+              line: loc.start.line,
+              column: loc.start.column,
+              start: opening.start ?? 0,
+              end: opening.end ?? 0,
+            },
+            rawText: classStr,
+            metadata: { type: 'optical-kerning-small-negative', classes },
+          });
+        }
+        // Trường hợp B: Nhãn in hoa nhỏ (Uppercase badge/caption) mà không tăng kerning
+        else if (isSmallText && isUppercase && hasNoPositiveTracking) {
+          violations.push({
+            ruleId: 'optical-kerning',
+            severity: config.severity,
+            message:
+              'Optical Typography: Uppercase captions and badges require expanded letter-spacing (tracking-wider or tracking-wide) for optical balance and readability.',
+            file: filePath,
+            loc: {
+              line: loc.start.line,
+              column: loc.start.column,
+              start: opening.start ?? 0,
+              end: opening.end ?? 0,
+            },
+            rawText: classStr,
+            metadata: { type: 'optical-kerning-uppercase-missing-wide', classes },
+          });
+        }
+      }
+
+      // 9. Kiểm tra Dark Mode Optical Compensation (Giảm 1 bậc font-weight / kích thước khi sang Dark Mode)
+      if (config.dark_mode_optical_compensation !== false) {
+        const hasExplicitSameHeavyDarkWeight =
+          classes.some((c) => /font-(?:bold|extrabold|black)/.test(c)) &&
+          classes.some((c) => /dark:font-(?:bold|extrabold|black)/.test(c));
+
+        if (hasExplicitSameHeavyDarkWeight) {
+          violations.push({
+            ruleId: 'dark-mode-optical-compensation',
+            severity: config.severity,
+            message:
+              'Optical Compensation: Due to visual irradiation, bright text on dark backgrounds appears ~10% heavier and larger. Reduce font-weight by 1 step in Dark Mode (e.g. font-bold → dark:font-semibold) and compensate sizing: Text (x - x/16), Icon (x - x/15).',
+            file: filePath,
+            loc: {
+              line: loc.start.line,
+              column: loc.start.column,
+              start: opening.start ?? 0,
+              end: opening.end ?? 0,
+            },
+            rawText: classStr,
+            metadata: { type: 'dark-mode-optical-compensation', classes },
+          });
+        }
+      }
     },
   });
 
