@@ -4,7 +4,7 @@
   "commit": false,
   "fixed": [],
   "linked": [
-    ["@agent-lint/core", "agent-lint", "eslint-plugin-agent-lint"]
+    ["@chien_swe/core", "agent-lint", "eslint-plugin-agent-lint"]
   ],
   "access": "public",
   "baseBranch": "main",

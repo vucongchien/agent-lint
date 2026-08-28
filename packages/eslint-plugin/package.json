@@ -11,7 +11,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@agent-lint/core": "workspace:*"
+    "@chien_swe/core": "workspace:*"
   },
   "devDependencies": {
     "eslint": "^9.19.0"

@@ -4,17 +4,17 @@
   "description": "CLI tool for linting and auto-syncing i18n & design tokens for React/Next.js with AI Agent support",
   "type": "module",
   "bin": {
-    "agent-lint": "./dist/bin.mjs"
+    "agent-lint": "./dist/bin.js"
   },
-  "main": "./dist/index.mjs",
-  "types": "./dist/index.d.mts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsup src/index.ts src/bin.ts --format esm --dts --clean",
     "dev": "tsup src/index.ts src/bin.ts --format esm --dts --watch",
     "test": "vitest run"
   },
   "dependencies": {
-    "@agent-lint/core": "workspace:*",
+    "@chien_swe/core": "workspace:*",
     "commander": "^13.1.0",
     "ora": "^8.2.0",
     "picocolors": "^1.1.1"

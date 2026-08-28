@@ -1,5 +1,5 @@
 import pc from 'picocolors';
-import { findDeadTranslationKeys, pruneDeadKeysFromFile, loadConfig } from '@agent-lint/core';
+import { findDeadTranslationKeys, pruneDeadKeysFromFile, loadConfig } from '@chien_swe/core';
 
 export interface CleanKeysCommandOptions {
   config?: string;

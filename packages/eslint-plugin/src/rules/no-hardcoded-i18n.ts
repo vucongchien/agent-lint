@@ -1,4 +1,4 @@
-import { scanI18nViolations, loadConfig } from '@agent-lint/core';
+import { scanI18nViolations, loadConfig } from '@chien_swe/core';
 
 export const noHardcodedI18nRule = {
   meta: {

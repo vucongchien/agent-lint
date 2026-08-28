@@ -7,7 +7,7 @@ import {
   formatJsonReport,
   formatAgentPromptReport,
   formatSarifReport,
-} from '@agent-lint/core';
+} from '@chien_swe/core';
 
 export interface ScanCommandOptions {
   config?: string;

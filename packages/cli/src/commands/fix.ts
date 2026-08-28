@@ -1,5 +1,5 @@
 import pc from 'picocolors';
-import { AgentLintEngine } from '@agent-lint/core';
+import { AgentLintEngine } from '@chien_swe/core';
 
 export interface FixCommandOptions {
   config?: string;

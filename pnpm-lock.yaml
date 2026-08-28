@@ -35,7 +35,7 @@ importers:
 
   packages/cli:
     dependencies:
-      '@agent-lint/core':
+      '@chien_swe/core':
         specifier: workspace:*
         version: link:../core
       commander:
@@ -87,7 +87,7 @@ importers:
 
   packages/eslint-plugin:
     dependencies:
-      '@agent-lint/core':
+      '@chien_swe/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:

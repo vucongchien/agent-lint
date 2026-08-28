@@ -1,4 +1,4 @@
-import { scanTokenViolations, loadConfig } from '@agent-lint/core';
+import { scanTokenViolations, loadConfig } from '@chien_swe/core';
 
 export const enforceDesignTokensRule = {
   meta: {
