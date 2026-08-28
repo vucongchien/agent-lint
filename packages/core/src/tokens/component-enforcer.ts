@@ -60,6 +60,8 @@ export function scanRestrictedComponents(options: ScanComponentEnforceOptions): 
       const fromPathLower = restrictedConfig.from.toLowerCase();
       if (
         normalizedFilePath.includes(fromPathLower.replace(/^@\//, '')) ||
+        normalizedFilePath.endsWith(`/${restrictedConfig.use.toLowerCase()}.tsx`) ||
+        normalizedFilePath.endsWith(`/${restrictedConfig.use.toLowerCase()}.jsx`) ||
         normalizedFilePath.endsWith(`${restrictedConfig.use.toLowerCase()}.tsx`) ||
         normalizedFilePath.endsWith(`${restrictedConfig.use.toLowerCase()}.jsx`)
       ) {
@@ -94,10 +96,6 @@ export function scanRestrictedComponents(options: ScanComponentEnforceOptions): 
           originalTag: tagName,
           targetComponent: restrictedConfig.use,
           importFrom: restrictedConfig.from,
-          openingStart: opening.name.start,
-          openingEnd: opening.name.end,
-          closingStart: path.node.closingElement?.name?.start,
-          closingEnd: path.node.closingElement?.name?.end,
         },
       });
     },
@@ -107,45 +105,101 @@ export function scanRestrictedComponents(options: ScanComponentEnforceOptions): 
 }
 
 /**
- * Tự động sửa thẻ HTML trần sang Custom Component và inject import
+ * Tự động sửa thẻ HTML trần sang Custom Component và inject import trên AST mới nhất
  */
 export function transformRestrictedComponents(
   code: string,
-  violations: Violation[]
+  config: EnforceComponentsConfig,
+  filePath: string = ''
 ): { code: string; hasChanged: boolean } {
-  const compViolations = violations.filter((v) => v.ruleId === 'restricted-element' && v.metadata);
-  if (compViolations.length === 0) {
+  if (!config || !config.enabled || config.severity === 'off') {
     return { code, hasChanged: false };
   }
 
+  const restrictedMap = config.restricted_elements || {};
+  if (Object.keys(restrictedMap).length === 0) {
+    return { code, hasChanged: false };
+  }
+
+  let ast: any;
+  try {
+    ast = parse(code, {
+      sourceType: 'module',
+      plugins: [
+        'jsx',
+        'typescript',
+        'decorators-legacy',
+        'classProperties',
+        'dynamicImport',
+      ],
+    });
+  } catch {
+    return { code, hasChanged: false };
+  }
+
+  const normalizedFilePath = filePath.replace(/\\/g, '/').toLowerCase();
   const s = new MagicString(code);
-  const importsToInject = new Map<string, Set<string>>(); // from -> Set of component names
+  let hasChanged = false;
+  const importsToInject = new Map<string, Set<string>>();
 
-  for (const v of compViolations) {
-    const meta = v.metadata!;
-    const targetComp = meta.targetComponent;
-    const importFrom = meta.importFrom;
+  traverse(ast, {
+    JSXElement(path) {
+      const opening = path.node.openingElement;
+      if (!t.isJSXIdentifier(opening.name)) return;
 
-    if (meta.openingStart !== undefined && meta.openingEnd !== undefined) {
-      s.overwrite(meta.openingStart, meta.openingEnd, targetComp);
-    }
-    if (meta.closingStart !== undefined && meta.closingEnd !== undefined) {
-      s.overwrite(meta.closingStart, meta.closingEnd, targetComp);
-    }
+      const tagName = opening.name.name;
+      const restrictedConfig = restrictedMap[tagName.toLowerCase()];
+      if (!restrictedConfig) return;
 
-    if (importFrom && targetComp) {
-      if (!importsToInject.has(importFrom)) {
-        importsToInject.set(importFrom, new Set());
+      // Miễn trừ nếu file hiện tại là file định nghĩa chính component đó
+      const fromPathLower = restrictedConfig.from.toLowerCase();
+      if (
+        normalizedFilePath &&
+        (normalizedFilePath.includes(fromPathLower.replace(/^@\//, '')) ||
+          normalizedFilePath.endsWith(`/${restrictedConfig.use.toLowerCase()}.tsx`) ||
+          normalizedFilePath.endsWith(`/${restrictedConfig.use.toLowerCase()}.jsx`))
+      ) {
+        return;
       }
-      importsToInject.get(importFrom)!.add(targetComp);
-    }
+
+      const targetComp = restrictedConfig.use;
+      const importFrom = restrictedConfig.from;
+
+      if (opening.name.start !== undefined && opening.name.end !== undefined) {
+        s.overwrite(opening.name.start, opening.name.end, targetComp);
+        hasChanged = true;
+      }
+
+      if (
+        path.node.closingElement?.name &&
+        path.node.closingElement.name.start !== undefined &&
+        path.node.closingElement.name.end !== undefined
+      ) {
+        s.overwrite(
+          path.node.closingElement.name.start,
+          path.node.closingElement.name.end,
+          targetComp
+        );
+        hasChanged = true;
+      }
+
+      if (importFrom && targetComp) {
+        if (!importsToInject.has(importFrom)) {
+          importsToInject.set(importFrom, new Set());
+        }
+        importsToInject.get(importFrom)!.add(targetComp);
+      }
+    },
+  });
+
+  if (!hasChanged) {
+    return { code, hasChanged: false };
   }
 
   // Inject imports at top of file
   let importStatements = '';
   for (const [from, compSet] of importsToInject.entries()) {
     const comps = Array.from(compSet).join(', ');
-    // Kiểm tra xem đã có import từ source này chưa
     if (!code.includes(`from '${from}'`) && !code.includes(`from "${from}"`)) {
       importStatements += `import { ${comps} } from '${from}';\n`;
     }

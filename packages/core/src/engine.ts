@@ -180,7 +180,7 @@ export class AgentLintEngine {
       // 2. Fix restricted components
       const compConfig = this.config.rules.design_tokens.enforce_components;
       if (compConfig?.enabled) {
-        const compRes = transformRestrictedComponents(currentCode, fileViolations);
+        const compRes = transformRestrictedComponents(currentCode, compConfig, filePath);
         if (compRes.hasChanged) {
           currentCode = compRes.code;
           fileChanged = true;

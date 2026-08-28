@@ -77,13 +77,7 @@ describe('Design System Component Enforcement', () => {
   return <div><button onClick={() => {}}>Xác nhận</button></div>;
 }`;
 
-    const violations = scanRestrictedComponents({
-      filePath: 'src/components/Card.tsx',
-      code,
-      config,
-    });
-
-    const result = transformRestrictedComponents(code, violations);
+    const result = transformRestrictedComponents(code, config, 'src/components/Card.tsx');
 
     expect(result.hasChanged).toBe(true);
     expect(result.code).toContain("import { Button } from '@/components/ui/button';");
