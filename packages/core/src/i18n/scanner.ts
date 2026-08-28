@@ -192,9 +192,9 @@ export function scanI18nViolations(options: ScanI18nOptions): Violation[] {
 
       // Kiểm tra xem có nằm trong context JSX không
       let isInsideJSX = false;
-      let p = path.parentPath;
+      let p: any = path.parentPath;
       while (p) {
-        if (p.isJSXElement() || p.isJSXAttribute()) {
+        if (p.isJSXElement?.() || p.isJSXAttribute?.()) {
           isInsideJSX = true;
           break;
         }
