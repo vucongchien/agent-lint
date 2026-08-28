@@ -165,15 +165,15 @@ export function transformRestrictedComponents(
       const targetComp = restrictedConfig.use;
       const importFrom = restrictedConfig.from;
 
-      if (opening.name.start !== undefined && opening.name.end !== undefined) {
+      if (typeof opening.name.start === 'number' && typeof opening.name.end === 'number') {
         s.overwrite(opening.name.start, opening.name.end, targetComp);
         hasChanged = true;
       }
 
       if (
         path.node.closingElement?.name &&
-        path.node.closingElement.name.start !== undefined &&
-        path.node.closingElement.name.end !== undefined
+        typeof path.node.closingElement.name.start === 'number' &&
+        typeof path.node.closingElement.name.end === 'number'
       ) {
         s.overwrite(
           path.node.closingElement.name.start,
