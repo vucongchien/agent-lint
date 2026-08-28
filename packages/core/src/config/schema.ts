@@ -153,6 +153,12 @@ export const DesignCraftSchema = z.object({
   type_scale_jump: z.boolean().default(true),
   optical_centering: z.boolean().default(true),
   entity_grid_gap_ratio: z.boolean().default(true),
+  no_missing_dark_mode: z.boolean().default(true),
+  no_monospace_costume: z.boolean().default(true),
+  no_decorative_floaters: z.boolean().default(true),
+  no_subjective_level_dots: z.boolean().default(true),
+  no_misleading_affordance: z.boolean().default(true),
+  no_undersized_ui_text: z.boolean().default(true),
 });
 
 export const AgentLintConfigSchema = z.object({

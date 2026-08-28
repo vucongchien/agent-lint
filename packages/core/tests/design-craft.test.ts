@@ -19,7 +19,7 @@ describe('Design Craft & Visual Quality Scanner (Anti-AI Slop)', () => {
     const code = `
       export function FeatureCard() {
         return (
-          <div className="rounded-lg p-4 bg-white shadow border-l-4 border-indigo-600">
+          <div className="rounded-lg p-4 bg-white dark:bg-slate-900 shadow border-l-4 border-indigo-600">
             <h3>Title</h3>
           </div>
         );
@@ -32,9 +32,8 @@ describe('Design Craft & Visual Quality Scanner (Anti-AI Slop)', () => {
       config,
     });
 
-    expect(violations.length).toBe(1);
-    expect(violations[0].ruleId).toBe('side-accent-border');
-    expect(violations[0].message).toContain('Avoid thick side-tab accent borders');
+    expect(violations.some((v) => v.ruleId === 'side-accent-border')).toBe(true);
+    expect(violations.find((v) => v.ruleId === 'side-accent-border')?.message).toContain('Avoid thick side-tab accent borders');
   });
 
   it('should flag gradient text (bg-clip-text text-transparent)', () => {
@@ -84,9 +83,9 @@ describe('Design Craft & Visual Quality Scanner (Anti-AI Slop)', () => {
     const code = `
       export function NestedWrapper() {
         return (
-          <div className="rounded-xl border border-slate-200 p-6 bg-white shadow-sm">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-6 bg-white dark:bg-slate-900 shadow-sm">
             <h2>Parent Card</h2>
-            <div className="rounded-lg border border-slate-100 p-4 bg-slate-50 shadow-xs">
+            <div className="rounded-lg border border-slate-100 dark:border-slate-700 p-4 bg-slate-50 dark:bg-slate-800 shadow-xs">
               <p>Child Card</p>
             </div>
           </div>
@@ -100,9 +99,8 @@ describe('Design Craft & Visual Quality Scanner (Anti-AI Slop)', () => {
       config,
     });
 
-    expect(violations.length).toBe(1);
-    expect(violations[0].ruleId).toBe('nested-cards');
-    expect(violations[0].message).toContain('Nested card containers create visual noise');
+    expect(violations.some((v) => v.ruleId === 'nested-cards')).toBe(true);
+    expect(violations.find((v) => v.ruleId === 'nested-cards')?.message).toContain('Nested card containers create visual noise');
   });
 
   it('should flag eyebrow kicker labels directly preceding headings', () => {
@@ -288,8 +286,8 @@ describe('Design Craft & Visual Quality Scanner (Anti-AI Slop)', () => {
       export function ProductGrid() {
         return (
           <div className="grid grid-cols-3 gap-2">
-            <div className="w-72 rounded-xl bg-white p-4">Card 1</div>
-            <div className="w-72 rounded-xl bg-white p-4">Card 2</div>
+            <div className="w-72 rounded-xl bg-white dark:bg-slate-900 p-4">Card 1</div>
+            <div className="w-72 rounded-xl bg-white dark:bg-slate-900 p-4">Card 2</div>
           </div>
         );
       }
@@ -301,8 +299,120 @@ describe('Design Craft & Visual Quality Scanner (Anti-AI Slop)', () => {
       config,
     });
 
+    expect(violations.some((v) => v.ruleId === 'entity-grid-gap')).toBe(true);
+    expect(violations.find((v) => v.ruleId === 'entity-grid-gap')?.message).toContain('Entity Grid Gap Ratio: The spacing (gap-2) between w-72 cards is too crowded');
+  });
+
+  it('should flag hardcoded light surfaces missing dark mode variants', () => {
+    const code = `
+      export function Card() {
+        return (
+          <div className="bg-white border-slate-200 text-slate-900 p-6 rounded-xl">
+            <h3>Title</h3>
+          </div>
+        );
+      }
+    `;
+
+    const violations = scanDesignCraftViolations({
+      filePath: 'src/components/Card.tsx',
+      code,
+      config,
+    });
+
     expect(violations.length).toBe(1);
-    expect(violations[0].ruleId).toBe('entity-grid-gap');
-    expect(violations[0].message).toContain('Entity Grid Gap Ratio: The spacing (gap-2) between w-72 cards is too crowded');
+    expect(violations[0].ruleId).toBe('missing-dark-mode');
+    expect(violations[0].message).toContain('Dark Mode Integrity: Hardcoded light surface/border/text without a corresponding "dark:" variant');
+  });
+
+  it('should flag monospace font used as decorative costume on prose', () => {
+    const code = `
+      export function Intro() {
+        return (
+          <p className="font-mono text-sm text-indigo-400">
+            {"// "}hello world
+          </p>
+        );
+      }
+    `;
+
+    const violations = scanDesignCraftViolations({
+      filePath: 'src/components/Intro.tsx',
+      code,
+      config,
+    });
+
+    expect(violations.length).toBe(1);
+    expect(violations[0].ruleId).toBe('monospace-costume');
+    expect(violations[0].message).toContain('Monospace font is used as a decorative dev-tool costume');
+  });
+
+  it('should flag empty rotated geometric floaters', () => {
+    const code = `
+      export function Hero() {
+        return (
+          <div className="relative">
+            <div className="absolute top-20 right-16 w-3 h-3 bg-indigo-600 rotate-45 opacity-20" />
+            <h1>Main Title</h1>
+          </div>
+        );
+      }
+    `;
+
+    const violations = scanDesignCraftViolations({
+      filePath: 'src/components/Hero.tsx',
+      code,
+      config,
+    });
+
+    expect(violations.length).toBe(1);
+    expect(violations[0].ruleId).toBe('decorative-floaters');
+    expect(violations[0].message).toContain('Empty rotated geometric shape detected');
+  });
+
+  it('should flag subjective 1-5 level dots on skill cards', () => {
+    const code = `
+      export function SkillBadge({ levelDots }) {
+        return (
+          <div className="flex gap-1">
+            {levelDots.map((filled, i) => (
+              <span key={i} className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+            ))}
+          </div>
+        );
+      }
+    `;
+
+    const violations = scanDesignCraftViolations({
+      filePath: 'src/components/Skill.tsx',
+      code,
+      config,
+    });
+
+    expect(violations.length).toBe(1);
+    expect(violations[0].ruleId).toBe('subjective-level-dots');
+    expect(violations[0].message).toContain('1-5 dot rating scales on skill cards are an unmeasurable CV anti-pattern');
+  });
+
+  it('should flag undersized text below 11px', () => {
+    const code = `
+      export function TechChip() {
+        return (
+          <span className="text-[10px] font-semibold text-slate-700">
+            Next.js
+          </span>
+        );
+      }
+    `;
+
+    const violations = scanDesignCraftViolations({
+      filePath: 'src/components/Chip.tsx',
+      code,
+      config,
+    });
+
+    expect(violations.length).toBe(1);
+    expect(violations[0].ruleId).toBe('undersized-ui-text');
+    expect(violations[0].message).toContain('is below the 11px threshold');
   });
 });

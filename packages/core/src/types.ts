@@ -145,6 +145,12 @@ export interface DesignCraftConfig {
   type_scale_jump?: boolean;                 // Tiêu đề và nội dung phụ phải nhảy tối thiểu 2 bậc cỡ chữ (tránh flat hierarchy)
   optical_centering?: boolean;               // Căn giữa quang học mắt người (Padding top < Padding bottom: 1 : 1.2)
   entity_grid_gap_ratio?: boolean;           // Khoảng cách Grid giữa các sản phẩm/thực thể bằng 1/3 Card Width
+  no_missing_dark_mode?: boolean;            // Cảnh báo thẻ có màu nền/chữ cố định thiếu biến thể dark: (tránh vỡ dark mode)
+  no_monospace_costume?: boolean;            // Cấm dùng font-mono cho text thông thường làm màu kỹ thuật
+  no_decorative_floaters?: boolean;          // Cấm khối hình học trống rỗng xoay rotate-45 trôi nổi rác thị giác
+  no_subjective_level_dots?: boolean;        // Cấm vòng lặp 5 chấm level kỹ năng đánh giá chủ quan trong CV
+  no_misleading_affordance?: boolean;        // Cấm nút gửi giả lập chatbox kích hoạt mở popup ngoài mà không có chỉ báo ↗
+  no_undersized_ui_text?: boolean;           // Cấm cỡ chữ < 11px gây khó đọc trên thiết bị di động
 }
 
 export interface AgentLintConfig {
@@ -194,7 +200,13 @@ export interface Violation {
     | 'critical-alert-signifier'
     | 'type-scale-jump'
     | 'optical-centering'
-    | 'entity-grid-gap';
+    | 'entity-grid-gap'
+    | 'missing-dark-mode'
+    | 'monospace-costume'
+    | 'decorative-floaters'
+    | 'subjective-level-dots'
+    | 'misleading-affordance'
+    | 'undersized-ui-text';
   severity: Severity;
   message: string;
   file: string;

@@ -536,6 +536,154 @@ export function scanDesignCraftViolations(options: ScanDesignCraftOptions): Viol
           }
         }
       }
+
+      // 14. Kiểm tra Missing Dark Mode Variants (Tránh vỡ giao diện nền tối)
+      if (config.no_missing_dark_mode !== false) {
+        const hasLightBg = classes.some((c) => /^(?:bg-white|bg-slate-50|bg-gray-50)$/.test(c));
+        const hasLightBorder = classes.some((c) => /^(?:border-slate-200|border-gray-200)$/.test(c));
+        const hasLightText = classes.some((c) => /^(?:text-slate-900|text-gray-900)$/.test(c));
+        const hasDarkModeClass = classes.some((c) => c.startsWith('dark:'));
+
+        if ((hasLightBg || hasLightBorder || hasLightText) && !hasDarkModeClass) {
+          violations.push({
+            ruleId: 'missing-dark-mode',
+            severity: config.severity,
+            message:
+              'Dark Mode Integrity: Hardcoded light surface/border/text without a corresponding "dark:" variant causes severe glare and broken contrast when users switch to Dark Mode. Add dark variants (e.g. dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100).',
+            file: filePath,
+            loc: {
+              line: loc.start.line,
+              column: loc.start.column,
+              start: opening.start ?? 0,
+              end: opening.end ?? 0,
+            },
+            rawText: classStr,
+            metadata: { type: 'missing-dark-mode-variants', classes },
+          });
+        }
+      }
+
+      // 15. Kiểm tra Monospace Costume (Cấm font mono làm màu trên text thông thường)
+      if (config.no_monospace_costume !== false) {
+        const hasMono = classes.includes('font-mono');
+        if (hasMono) {
+          // Bỏ qua nếu là <code>, <pre>, <kbd>
+          const tagName = t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
+          if (tagName !== 'code' && tagName !== 'pre' && tagName !== 'kbd') {
+            // Kiểm tra xem nội dung bên trong có phải narrative text hoặc fake dev prefix ("//")
+            const textContent = path.node.children
+              .filter(t.isJSXText)
+              .map((t) => t.value)
+              .join(' ');
+
+            if (textContent.includes('//') || /hello|world|welcome|about|subtitle/i.test(textContent) || tagName === 'h1' || tagName === 'h2' || tagName === 'p') {
+              violations.push({
+                ruleId: 'monospace-costume',
+                severity: config.severity,
+                message:
+                  'Monospace Costume: Monospace font is used as a decorative dev-tool costume on non-code prose. Reserve monospace strictly for real code snippets, measurements, or terminal output.',
+                file: filePath,
+                loc: {
+                  line: loc.start.line,
+                  column: loc.start.column,
+                  start: opening.start ?? 0,
+                  end: opening.end ?? 0,
+                },
+                rawText: classStr,
+                metadata: { type: 'monospace-costume-on-prose', classes },
+              });
+            }
+          }
+        }
+      }
+
+      // 16. Kiểm tra Decorative Floaters (Cấm hình học rỗng xoay 45 độ trôi nổi vô nghĩa)
+      if (config.no_decorative_floaters !== false) {
+        const isAbsolute = classes.includes('absolute');
+        const isRotated = classes.some((c) => /rotate-(?:45|12|\[.+?\])/.test(c));
+        const hasOpacity = classes.some((c) => /^opacity-\d+$/.test(c));
+        const isEmptyElement = path.node.children.length === 0;
+
+        if (isAbsolute && isRotated && hasOpacity && isEmptyElement) {
+          violations.push({
+            ruleId: 'decorative-floaters',
+            severity: config.severity,
+            message:
+              'Decorative Floater: Empty rotated geometric shape detected. Avoid floating decorative diamonds/squares as they create visual noise and represent generic AI template styling.',
+            file: filePath,
+            loc: {
+              line: loc.start.line,
+              column: loc.start.column,
+              start: opening.start ?? 0,
+              end: opening.end ?? 0,
+            },
+            rawText: classStr,
+            metadata: { type: 'decorative-rotated-floater', classes },
+          });
+        }
+      }
+
+      // 17. Kiểm tra Subjective Level Dots (Cấm vòng lặp 5 chấm level kỹ năng trong CV)
+      if (config.no_subjective_level_dots !== false) {
+        // Kiểm tra xem có map qua level dots không (e.g. key={i} với rounded-full w-1 h-1)
+        const isTinyDot = classes.includes('rounded-full') && classes.some((c) => /^[wh]-(?:1|1\.5|2)$/.test(c));
+        if (isTinyDot) {
+          let parent: any = path.parentPath;
+          let isInsideLevelLoop = false;
+          while (parent) {
+            if (parent.isCallExpression?.()) {
+              const callee = parent.node.callee;
+              if (t.isMemberExpression(callee) && t.isIdentifier(callee.property) && callee.property.name === 'map') {
+                const callerName = (callee.object as any)?.name || '';
+                if (/level|dot|rating|score/i.test(callerName)) {
+                  isInsideLevelLoop = true;
+                  break;
+                }
+              }
+            }
+            parent = parent.parentPath;
+          }
+
+          if (isInsideLevelLoop) {
+            violations.push({
+              ruleId: 'subjective-level-dots',
+              severity: config.severity,
+              message:
+                'Subjective Level Dots: 1-5 dot rating scales on skill cards are an unmeasurable CV anti-pattern. Use categorized skill lists with crisp SVG icons and project proofs instead.',
+              file: filePath,
+              loc: {
+                line: loc.start.line,
+                column: loc.start.column,
+                start: opening.start ?? 0,
+                end: opening.end ?? 0,
+              },
+              rawText: classStr,
+              metadata: { type: 'subjective-skill-dots', classes },
+            });
+          }
+        }
+      }
+
+      // 18. Kiểm tra Undersized UI Text (< 11px)
+      if (config.no_undersized_ui_text !== false) {
+        const undersizedClass = classes.find((c) => /text-\[(?:[6789]|10)px\]/.test(c));
+        if (undersizedClass) {
+          violations.push({
+            ruleId: 'undersized-ui-text',
+            severity: config.severity,
+            message: `Undersized UI Text: Font size "${undersizedClass}" is below the 11px threshold, causing severe readability failure on high-DPI mobile devices. Use at least text-xs (12px) for UI badges and tags.`,
+            file: filePath,
+            loc: {
+              line: loc.start.line,
+              column: loc.start.column,
+              start: opening.start ?? 0,
+              end: opening.end ?? 0,
+            },
+            rawText: undersizedClass,
+            metadata: { type: 'undersized-font', undersizedClass },
+          });
+        }
+      }
     },
   });
 

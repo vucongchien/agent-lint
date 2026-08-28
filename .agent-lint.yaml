@@ -122,9 +122,15 @@ rules:
     optical_kerning: true                 # Chữ càng nhỏ thì tracking/kerning phải càng rộng
     dark_mode_optical_compensation: true  # Bù trừ quang sai phát xạ trong Dark Mode (x - x/16)
     critical_alert_signifiers: true        # Cảnh báo nguy hiểm phải có Icon và viền phân cấp mạnh
-    type_scale_jump: true                 # Tiêu đề và nội dung phụ phải nhảy tối thiểu 2 bậc scale
     optical_centering: true               # Căn giữa quang học mắt người (Padding Top < Bottom: 1 : 1.2)
     entity_grid_gap_ratio: true           # Khoảng cách Grid giữa các sản phẩm bằng 1/3 Card Width
+    no_missing_dark_mode: true            # Cảnh báo thiếu dark: variant gây vỡ giao diện nền tối
+    no_monospace_costume: true            # Cấm dùng font-mono cho text thông thường làm màu kỹ thuật
+    no_decorative_floaters: true          # Cấm hình học xoay 45 độ trôi nổi rác thị giác
+    no_subjective_level_dots: true        # Cấm 5 chấm level kỹ năng đánh giá chủ quan
+    no_misleading_affordance: true        # Cấm nút gửi giả lập chatbox bật popup ngoài
+    no_undersized_ui_text: true           # Cấm cỡ chữ < 11px gây khó đọc trên mobile
+
 
 
 

@@ -25,8 +25,7 @@ Thư mục này chứa toàn bộ bộ unit test cho gói `@agent-lint/core`. M�
 | **`composition-scanner.test.ts`**| `src/architecture/composition-scanner.ts` | - Kiểm soát kiến trúc Composition-Only trong các file `page.tsx` và `layout.tsx`.<br/>- Phát hiện thẻ HTML trần lồng sâu ($> 3$ tầng) hoặc tỷ lệ HTML trần quá cao. |
 | **`deduplication-scanner.test.ts`**| `src/architecture/deduplication-scanner.ts` | - Nhận diện Component/Layout bị trùng cấu trúc và class CSS theo Quy tắc số 3 (Rule of Three).<br/>- Gợi ý tái cấu trúc thành Polymorphic / Variant Component. |
 | **`presets.test.ts`** | `src/config/presets.ts` | - Kiểm thử mở rộng tự động 4 Architecture Presets (`nextjs`, `clean-architecture`, `fsd`, `ddd`).<br/>- Kiểm thử khả năng ghi đè cấu hình linh hoạt. |
-| **`boundary-scanner.test.ts`** | `src/architecture/boundary-scanner.ts` | - Kiểm tra tính thuần túy của Domain Layer (Domain Purity - Cấm ORM/DB trong Domain).<br/>- Kiểm tra đảo ngược phân tầng FSD/Clean Arch.<br/>- Kiểm soát ranh giới Server/Client Next.js và hỗ trợ `import type`. |
-| **`design-craft.test.ts`** | `src/tokens/craft-scanner.ts` | - Kiểm soát chất lượng thẩm mỹ và Design Craft (Anti-AI Slop).<br/>- Bắt side-tab, gradient text, glowing shadow, nested cards, floating eyebrow kicker, fake pulse dot, ghost cards. |
+| **`design-craft.test.ts`** | `src/tokens/craft-scanner.ts` | - Kiểm soát chất lượng thẩm mỹ và Design Craft (9.5/10 UX & Anti-AI Slop).<br/>- Bắt side-tab, gradient text, glowing shadow, nested cards, eyebrow kicker, fake pulse dot, ghost cards, optical kerning, dark mode irradiation, missing dark variants, monospace costumes, decorative floaters, subjective level dots, undersized text. |
 | **`engine.test.ts`** | `src/engine.ts` | - Kiểm thử toàn diện luồng quét (Scan) và sửa tự động (Fix) đa file. |
 
 ---
