@@ -108,16 +108,23 @@ rules:
         - "fs"
         - "path"
 
-  # 6. Design Craft & Visual Quality (Anti-AI Slop Governance)
+  # 6. Design Craft & Visual Quality (Anti-AI Slop & Optical Physics)
   design_craft:
     enabled: true
     severity: "warn"
-    no_side_accent_border: true  # Cấm viền dày 1 bên mép card (border-l-4)
-    no_gradient_text: true       # Cấm chữ dải màu lòe loẹt (bg-clip-text text-transparent)
-    no_glowing_shadows: true     # Cấm bóng đổ phát sáng màu mè (shadow-[0_0_...px])
-    no_nested_cards: true        # Cấm card lồng trong card
-    no_eyebrow_kicker: true      # Cấm nhãn in hoa đè trên heading
-    no_fake_pulse_dot: true      # Cấm animate-ping trên status dot tĩnh
-    no_ghost_card: true          # Cấm vừa viền dày vừa bóng to trên cùng 1 card
+    no_side_accent_border: true           # Cấm viền dày 1 bên mép card (border-l-4)
+    no_gradient_text: true                # Cấm chữ dải màu lòe loẹt (bg-clip-text text-transparent)
+    no_glowing_shadows: true              # Cấm bóng đổ phát sáng màu mè (shadow-[0_0_...px])
+    no_nested_cards: true                 # Cấm card lồng trong card
+    no_eyebrow_kicker: true               # Cấm nhãn in hoa đè trên heading
+    no_fake_pulse_dot: true               # Cấm animate-ping trên status dot tĩnh
+    no_ghost_card: true                   # Cấm vừa viền dày vừa bóng to trên cùng 1 card
+    optical_kerning: true                 # Chữ càng nhỏ thì tracking/kerning phải càng rộng
+    dark_mode_optical_compensation: true  # Bù trừ quang sai phát xạ trong Dark Mode (x - x/16)
+    critical_alert_signifiers: true        # Cảnh báo nguy hiểm phải có Icon và viền phân cấp mạnh
+    type_scale_jump: true                 # Tiêu đề và nội dung phụ phải nhảy tối thiểu 2 bậc scale
+    optical_centering: true               # Căn giữa quang học mắt người (Padding Top < Bottom: 1 : 1.2)
+    entity_grid_gap_ratio: true           # Khoảng cách Grid giữa các sản phẩm bằng 1/3 Card Width
+
 
 

@@ -149,6 +149,10 @@ export const DesignCraftSchema = z.object({
   no_ghost_card: z.boolean().default(true),
   optical_kerning: z.boolean().default(true),
   dark_mode_optical_compensation: z.boolean().default(true),
+  critical_alert_signifiers: z.boolean().default(true),
+  type_scale_jump: z.boolean().default(true),
+  optical_centering: z.boolean().default(true),
+  entity_grid_gap_ratio: z.boolean().default(true),
 });
 
 export const AgentLintConfigSchema = z.object({

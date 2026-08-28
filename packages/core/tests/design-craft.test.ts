@@ -215,4 +215,94 @@ describe('Design Craft & Visual Quality Scanner (Anti-AI Slop)', () => {
     expect(violations[0].ruleId).toBe('dark-mode-optical-compensation');
     expect(violations[0].message).toContain('Due to visual irradiation, bright text on dark backgrounds appears ~10% heavier');
   });
+
+  it('should flag critical alert missing visual signifier icons', () => {
+    const code = `
+      export function DangerAlert() {
+        return (
+          <div className="bg-red-500 text-white p-4 rounded-lg">
+            <span>Critical error: database disconnected</span>
+          </div>
+        );
+      }
+    `;
+
+    const violations = scanDesignCraftViolations({
+      filePath: 'src/components/Alert.tsx',
+      code,
+      config,
+    });
+
+    expect(violations.length).toBe(1);
+    expect(violations[0].ruleId).toBe('critical-alert-signifier');
+    expect(violations[0].message).toContain('High-priority warning / danger alerts require an explicit visual anchor');
+  });
+
+  it('should flag flat type scale jumps between heading and body (only 1 step difference)', () => {
+    const code = `
+      export function FlatHeader() {
+        return (
+          <div>
+            <h3 className="text-base font-semibold">User Details</h3>
+            <p className="text-sm text-slate-500">Manage account information</p>
+          </div>
+        );
+      }
+    `;
+
+    const violations = scanDesignCraftViolations({
+      filePath: 'src/components/Header.tsx',
+      code,
+      config,
+    });
+
+    expect(violations.length).toBe(1);
+    expect(violations[0].ruleId).toBe('type-scale-jump');
+    expect(violations[0].message).toContain('only differ by 1 scale step. Use at least a 2-step hierarchy jump');
+  });
+
+  it('should flag symmetrical vertical padding on large hero banners (optical centering)', () => {
+    const code = `
+      export function HeroBanner() {
+        return (
+          <section className="min-h-screen py-24 items-center justify-center bg-slate-950">
+            <h1>Welcome to Future</h1>
+          </section>
+        );
+      }
+    `;
+
+    const violations = scanDesignCraftViolations({
+      filePath: 'src/components/Hero.tsx',
+      code,
+      config,
+    });
+
+    expect(violations.length).toBe(1);
+    expect(violations[0].ruleId).toBe('optical-centering');
+    expect(violations[0].message).toContain('Optical Vertical Centering: Large sections with symmetrical padding');
+  });
+
+  it('should flag entity grid gap when out of ratio (gap too tight on large cards)', () => {
+    const code = `
+      export function ProductGrid() {
+        return (
+          <div className="grid grid-cols-3 gap-2">
+            <div className="w-72 rounded-xl bg-white p-4">Card 1</div>
+            <div className="w-72 rounded-xl bg-white p-4">Card 2</div>
+          </div>
+        );
+      }
+    `;
+
+    const violations = scanDesignCraftViolations({
+      filePath: 'src/components/Grid.tsx',
+      code,
+      config,
+    });
+
+    expect(violations.length).toBe(1);
+    expect(violations[0].ruleId).toBe('entity-grid-gap');
+    expect(violations[0].message).toContain('Entity Grid Gap Ratio: The spacing (gap-2) between w-72 cards is too crowded');
+  });
 });

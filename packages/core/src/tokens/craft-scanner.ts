@@ -345,6 +345,197 @@ export function scanDesignCraftViolations(options: ScanDesignCraftOptions): Viol
           });
         }
       }
+
+      // 10. Kiểm tra Critical Alert Signifiers (Khung cảnh báo nguy hiểm phải có Icon chỉ dẫn)
+      if (config.critical_alert_signifiers !== false) {
+        const isAlertBg = classes.some((c) =>
+          /^bg-(?:red|rose|amber|orange|yellow)-(?:50|100|200|500|600|700|800|900)$/.test(c)
+        );
+        const isAlertRole = opening.attributes.some(
+          (attr) =>
+            t.isJSXAttribute(attr) &&
+            attr.name.name === 'role' &&
+            t.isStringLiteral(attr.value) &&
+            (attr.value.value === 'alert' || attr.value.value === 'status')
+        );
+
+        if (isAlertBg || isAlertRole) {
+          // Kiểm tra xem container có chứa SVG icon hoặc Icon component con không
+          let hasIconChild = false;
+          path.traverse({
+            JSXElement(childPath) {
+              if (childPath === path) return;
+              const childName = childPath.node.openingElement.name;
+              if (t.isJSXIdentifier(childName)) {
+                const name = childName.name.toLowerCase();
+                if (
+                  name === 'svg' ||
+                  name.includes('icon') ||
+                  name.includes('alert') ||
+                  name.includes('warning') ||
+                  name.includes('danger')
+                ) {
+                  hasIconChild = true;
+                }
+              }
+            },
+          });
+
+          if (!hasIconChild) {
+            violations.push({
+              ruleId: 'critical-alert-signifier',
+              severity: config.severity,
+              message:
+                'Critical Alert Signifier: High-priority warning / danger alerts require an explicit visual anchor (Icon / SVG symbol) alongside strong border contrast so users register critical information immediately.',
+              file: filePath,
+              loc: {
+                line: loc.start.line,
+                column: loc.start.column,
+                start: opening.start ?? 0,
+                end: opening.end ?? 0,
+              },
+              rawText: classStr,
+              metadata: { type: 'critical-alert-missing-icon', classes },
+            });
+          }
+        }
+      }
+
+      // 11. Kiểm tra Type Scale Jump (Tiêu đề và nội dung phụ phải nhảy tối thiểu 2 bậc cỡ chữ)
+      if (config.type_scale_jump !== false) {
+        const tagName = t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
+        if (/^h[1-6]$/.test(tagName)) {
+          const SCALE_STEPS: Record<string, number> = {
+            'text-xs': 1,
+            'text-sm': 2,
+            'text-base': 3,
+            'text-lg': 4,
+            'text-xl': 5,
+            'text-2xl': 6,
+            'text-3xl': 7,
+            'text-4xl': 8,
+            'text-5xl': 9,
+          };
+
+          const headingSizeClass = classes.find((c) => c in SCALE_STEPS);
+          if (headingSizeClass) {
+            const headingStep = SCALE_STEPS[headingSizeClass];
+
+            // Tìm sibling paragraph hoặc span mô tả tiếp theo
+            const parent = path.parent;
+            if (t.isJSXElement(parent)) {
+              const siblings = parent.children.filter(t.isJSXElement);
+              const index = siblings.indexOf(path.node);
+              if (index >= 0 && index < siblings.length - 1) {
+                const nextSibling = siblings[index + 1];
+                const nextTag = t.isJSXIdentifier(nextSibling.openingElement.name)
+                  ? nextSibling.openingElement.name.name.toLowerCase()
+                  : '';
+
+                if (nextTag === 'p' || nextTag === 'span' || nextTag === 'div') {
+                  const nextClasses = extractClassNames(nextSibling.openingElement);
+                  const bodySizeClass = nextClasses.find((c) => c in SCALE_STEPS);
+
+                  if (bodySizeClass) {
+                    const bodyStep = SCALE_STEPS[bodySizeClass];
+                    if (headingStep - bodyStep < 2 && headingStep >= bodyStep) {
+                      violations.push({
+                        ruleId: 'type-scale-jump',
+                        severity: config.severity,
+                        message: `Type Scale Hierarchy Jump: Heading (${headingSizeClass}) and supporting body (${bodySizeClass}) only differ by 1 scale step. Use at least a 2-step hierarchy jump (e.g. text-xl with text-sm) to prevent flat typography.`,
+                        file: filePath,
+                        loc: {
+                          line: loc.start.line,
+                          column: loc.start.column,
+                          start: opening.start ?? 0,
+                          end: opening.end ?? 0,
+                        },
+                        rawText: `${headingSizeClass} -> ${bodySizeClass}`,
+                        metadata: { type: 'type-scale-flat-jump', headingSizeClass, bodySizeClass },
+                      });
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // 12. Kiểm tra Optical Centering (Căn giữa quang học: Padding Top < Padding Bottom: 1 : 1.2)
+      if (config.optical_centering !== false) {
+        const isHeroOrBanner = classes.some((c) =>
+          /min-h-(?:screen|\[.+?\])|h-screen|max-w-screen/.test(c) ||
+          (classes.includes('items-center') && classes.includes('justify-center'))
+        );
+        const hasEqualHeavyVerticalPadding = classes.some((c) =>
+          /^py-(?:10|12|14|16|20|24|28|32|36|40|48|56|64)$/.test(c)
+        );
+
+        if (isHeroOrBanner && hasEqualHeavyVerticalPadding) {
+          const pyClass = classes.find((c) => /^py-(?:10|12|14|16|20|24|28|32|36|40|48|56|64)$/.test(c));
+          violations.push({
+            ruleId: 'optical-centering',
+            severity: config.severity,
+            message: `Optical Vertical Centering: Large sections with symmetrical padding (${pyClass}) feel bottom-heavy due to visual gravity. Shift weight slightly upward by applying an optical ratio (pt < pb: ~1 : 1.2, e.g. pt-10 pb-12 or pt-16 pb-20).`,
+            file: filePath,
+            loc: {
+              line: loc.start.line,
+              column: loc.start.column,
+              start: opening.start ?? 0,
+              end: opening.end ?? 0,
+            },
+            rawText: classStr,
+            metadata: { type: 'optical-centering-symmetrical', classes },
+          });
+        }
+      }
+
+      // 13. Kiểm tra Entity / Product Grid Gap Ratio (Gap ≈ 1/3 Card Width)
+      if (config.entity_grid_gap_ratio !== false) {
+        const isGrid = classes.some((c) => c === 'grid' || c.startsWith('grid-cols-') || c === 'flex');
+        const gapClass = classes.find((c) => /^gap-(?:1|2|3|24|28|32|36|40|48)$/.test(c));
+
+        if (isGrid && gapClass) {
+          // Kiểm tra xem các con có width cố định dạng Card không
+          let hasCardChild = false;
+          let cardWidth = '';
+
+          for (const child of path.node.children) {
+            if (t.isJSXElement(child)) {
+              const childClasses = extractClassNames(child.openingElement);
+              const wClass = childClasses.find((c) => /^w-(?:56|60|64|72|80|96|\[\d+px\])$/.test(c));
+              if (wClass) {
+                hasCardChild = true;
+                cardWidth = wClass;
+                break;
+              }
+            }
+          }
+
+          if (hasCardChild) {
+            const isTooTight = /^gap-[123]$/.test(gapClass);
+            const isTooLoose = /^gap-(?:24|28|32|36|40|48)$/.test(gapClass);
+
+            if (isTooTight || isTooLoose) {
+              violations.push({
+                ruleId: 'entity-grid-gap',
+                severity: config.severity,
+                message: `Entity Grid Gap Ratio: The spacing (${gapClass}) between ${cardWidth} cards is ${isTooTight ? 'too crowded' : 'too disconnected'}. Golden visual rhythm recommends gap ≈ 1/3 item width (e.g. w-72 [288px] cards pair best with gap-6 to gap-8 [24-32px]).`,
+                file: filePath,
+                loc: {
+                  line: loc.start.line,
+                  column: loc.start.column,
+                  start: opening.start ?? 0,
+                  end: opening.end ?? 0,
+                },
+                rawText: `${gapClass} on ${cardWidth}`,
+                metadata: { type: 'entity-grid-gap-out-of-ratio', gapClass, cardWidth },
+              });
+            }
+          }
+        }
+      }
     },
   });
 

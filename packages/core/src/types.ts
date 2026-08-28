@@ -141,6 +141,10 @@ export interface DesignCraftConfig {
   no_ghost_card?: boolean;                   // Cấm vừa viền dày vừa bóng mờ trên cùng 1 card
   optical_kerning?: boolean;                 // Chữ càng nhỏ thì tracking/kerning phải càng rộng (tránh dính nét)
   dark_mode_optical_compensation?: boolean;  // Giảm 1 bậc font-weight/kích thước trong Dark Mode (quang sai phát xạ)
+  critical_alert_signifiers?: boolean;       // Khung cảnh báo nguy hiểm phải có Icon chỉ dẫn và viền phân cấp mạnh
+  type_scale_jump?: boolean;                 // Tiêu đề và nội dung phụ phải nhảy tối thiểu 2 bậc cỡ chữ (tránh flat hierarchy)
+  optical_centering?: boolean;               // Căn giữa quang học mắt người (Padding top < Padding bottom: 1 : 1.2)
+  entity_grid_gap_ratio?: boolean;           // Khoảng cách Grid giữa các sản phẩm/thực thể bằng 1/3 Card Width
 }
 
 export interface AgentLintConfig {
@@ -186,7 +190,11 @@ export interface Violation {
     | 'fake-pulse-dot'
     | 'ghost-card'
     | 'optical-kerning'
-    | 'dark-mode-optical-compensation';
+    | 'dark-mode-optical-compensation'
+    | 'critical-alert-signifier'
+    | 'type-scale-jump'
+    | 'optical-centering'
+    | 'entity-grid-gap';
   severity: Severity;
   message: string;
   file: string;
