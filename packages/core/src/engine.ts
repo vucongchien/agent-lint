@@ -12,6 +12,7 @@ import { scanI18nViolations } from './i18n/scanner';
 import { transformI18nFile } from './i18n/transformer';
 import { LocaleFileManager } from './i18n/locales';
 import { scanTokenViolations } from './tokens/scanner';
+import { scanCssFileViolations } from './tokens/css-scanner';
 
 export interface EngineOptions {
   rootDir?: string;
@@ -75,24 +76,38 @@ export class AgentLintEngine {
       if (!fs.existsSync(filePath)) continue;
       const code = fs.readFileSync(filePath, 'utf-8');
 
-      // 1. Scan i18n hardcodes
-      if (this.config.rules.i18n.enabled) {
-        const i18nViolations = scanI18nViolations({
-          filePath,
-          code,
-          config: this.config.rules.i18n,
-        });
-        violations.push(...i18nViolations);
-      }
+      const ext = path.extname(filePath).toLowerCase();
+      const isCss = ['.css', '.scss', '.sass', '.less'].includes(ext);
 
-      // 2. Scan Design Token violations
-      if (this.config.rules.design_tokens.enabled) {
-        const tokenViolations = scanTokenViolations({
-          filePath,
-          code,
-          config: this.config.rules.design_tokens,
-        });
-        violations.push(...tokenViolations);
+      if (isCss) {
+        if (this.config.rules.design_tokens.enabled) {
+          const cssViolations = scanCssFileViolations({
+            filePath,
+            code,
+            config: this.config.rules.design_tokens,
+          });
+          violations.push(...cssViolations);
+        }
+      } else {
+        // 1. Scan i18n hardcodes
+        if (this.config.rules.i18n.enabled) {
+          const i18nViolations = scanI18nViolations({
+            filePath,
+            code,
+            config: this.config.rules.i18n,
+          });
+          violations.push(...i18nViolations);
+        }
+
+        // 2. Scan Design Token violations
+        if (this.config.rules.design_tokens.enabled) {
+          const tokenViolations = scanTokenViolations({
+            filePath,
+            code,
+            config: this.config.rules.design_tokens,
+          });
+          violations.push(...tokenViolations);
+        }
       }
     }
 

@@ -3,6 +3,7 @@ import _traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import type { I18nRuleConfig, Violation } from '../types';
 import { generateI18nKey } from './slug';
+import { parseTemplateLiteralInterpolation } from './interpolation';
 import {
   isTranslatableText,
   TECHNICAL_JSX_TAGS,
@@ -178,6 +179,71 @@ export function scanI18nViolations(options: ScanI18nOptions): Violation[] {
         metadata: {
           nodeType: 'JSXAttribute',
           attrName: attrName.name,
+        },
+      });
+    },
+
+    // 3. Quét TemplateLiteral có biến trong JSX: <div>{`Chào ${name}`}</div> hoặc attr={<TemplateLiteral>}
+    TemplateLiteral(path) {
+      // Bỏ qua nếu là tagged template literal như css`...` hoặc styled.div`...`
+      if (t.isTaggedTemplateExpression(path.parent)) {
+        return;
+      }
+
+      // Kiểm tra xem có nằm trong context JSX không
+      let isInsideJSX = false;
+      let p = path.parentPath;
+      while (p) {
+        if (p.isJSXElement() || p.isJSXAttribute()) {
+          isInsideJSX = true;
+          break;
+        }
+        p = p.parentPath;
+      }
+      if (!isInsideJSX) return;
+
+      const nodeLoc = path.node.loc;
+      if (!nodeLoc) return;
+
+      const parsedInterpolation = parseTemplateLiteralInterpolation(path.node, code, {
+        funcName: config.integration.function_name,
+        filePath,
+        strategy: config.key_generation.strategy,
+        maxLength: config.key_generation.max_length,
+        prefix: config.key_generation.prefix,
+      });
+
+      if (!parsedInterpolation) return;
+
+      // Kiểm tra xem phần chuỗi tĩnh có translatable không
+      if (!isTranslatableText(parsedInterpolation.icuString, { whitelist: whitelistSet, customIgnorePatterns: compiledRegexes })) {
+        return;
+      }
+
+      const start = path.node.start ?? 0;
+      const end = path.node.end ?? 0;
+
+      violations.push({
+        ruleId: 'i18n-hardcoded',
+        severity: config.severity,
+        message: `Hardcoded dynamic template string found in JSX: \`${parsedInterpolation.icuString}\``,
+        file: filePath,
+        loc: {
+          line: nodeLoc.start.line,
+          column: nodeLoc.start.column,
+          start,
+          end,
+        },
+        rawText: parsedInterpolation.icuString,
+        suggestedFix: {
+          type: 'replace',
+          replacement: parsedInterpolation.replacementCode,
+          generatedKey: parsedInterpolation.generatedKey,
+        },
+        metadata: {
+          nodeType: 'TemplateLiteral',
+          icuString: parsedInterpolation.icuString,
+          params: parsedInterpolation.params,
         },
       });
     },

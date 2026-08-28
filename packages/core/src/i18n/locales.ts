@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import type { TranslationProvider } from './translator';
 
 export interface LocaleFileManagerOptions {
   rootDir: string;
@@ -109,6 +110,42 @@ export class LocaleFileManager {
       const targetValue = isDefault
         ? value
         : `[TODO: TRANSLATE] ${value}`;
+
+      this.setNestedValue(data, key, targetValue, options.overwrite);
+      this.writeLocaleFile(filePath, data);
+      targetFiles.push(filePath);
+    }
+
+    return { targetFiles, keyAdded: key };
+  }
+
+  /**
+   * Thêm key và tự động dịch sang các locale phụ qua TranslationProvider
+   */
+  public async addKeyAsync(
+    key: string,
+    value: string,
+    options: { overwrite?: boolean; translator?: TranslationProvider } = {}
+  ): Promise<{ targetFiles: string[]; keyAdded: string }> {
+    if (!fs.existsSync(this.localesDirFull)) {
+      fs.mkdirSync(this.localesDirFull, { recursive: true });
+    }
+
+    const targetFiles: string[] = [];
+
+    for (const locale of this.supportedLocales) {
+      const isDefault = locale === this.defaultLocale;
+      const data = this.readLocale(locale);
+      const filePath = this.getLocaleFilePath(locale);
+
+      let targetValue = value;
+      if (!isDefault) {
+        if (options.translator) {
+          targetValue = await options.translator.translate(value, this.defaultLocale, locale);
+        } else {
+          targetValue = `[TODO: TRANSLATE] ${value}`;
+        }
+      }
 
       this.setNestedValue(data, key, targetValue, options.overwrite);
       this.writeLocaleFile(filePath, data);

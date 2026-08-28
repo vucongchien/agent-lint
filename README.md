@@ -75,6 +75,15 @@ npx agent-lint scan --format=agent
 npx agent-lint fix
 ```
 
+### 4. Find & Prune Dead Translation Keys
+```bash
+# Detect unused keys in dictionary files
+npx agent-lint clean-keys
+
+# Automatically prune orphaned keys from JSON files
+npx agent-lint clean-keys --prune
+```
+
 ---
 
 ## 🔍 Before & After

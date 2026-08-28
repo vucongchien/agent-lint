@@ -3,6 +3,7 @@ import { Command } from 'commander';
 import { initCommand } from './commands/init';
 import { scanCommand } from './commands/scan';
 import { fixCommand } from './commands/fix';
+import { cleanKeysCommand } from './commands/clean-keys';
 
 const program = new Command();
 
@@ -35,6 +36,15 @@ program
   .option('-c, --config <path>', 'Path to custom config file')
   .action((files, options) => {
     fixCommand(files, options);
+  });
+
+program
+  .command('clean-keys')
+  .description('Find and remove dead/unused translation keys from dictionary files')
+  .option('-c, --config <path>', 'Path to custom config file')
+  .option('-p, --prune', 'Automatically delete dead keys from JSON files')
+  .action((options) => {
+    cleanKeysCommand(options);
   });
 
 program.parse(process.argv);

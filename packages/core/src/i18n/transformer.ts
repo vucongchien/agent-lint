@@ -50,7 +50,12 @@ export function transformI18nFile(options: TransformI18nOptions): TransformResul
 
     const { start, end } = violation.loc;
     if (start >= 0 && end > start) {
-      if (violation.metadata?.nodeType === 'JSXAttribute') {
+      if (violation.metadata?.nodeType === 'TemplateLiteral') {
+        // TemplateLiteral: `Hello ${name}` -> t('hello', { name })
+        const replacement = violation.suggestedFix?.replacement || '';
+        // If replacement is `{t(...)}`, check if we're replacing the template literal directly
+        s.overwrite(start, end, replacement.startsWith('{') && replacement.endsWith('}') ? replacement.slice(1, -1) : replacement);
+      } else if (violation.metadata?.nodeType === 'JSXAttribute') {
         // attribute: placeholder="Text" -> placeholder={t('key')}
         s.overwrite(start, end, `{${funcName}('${keyToUse}')}`);
       } else {
