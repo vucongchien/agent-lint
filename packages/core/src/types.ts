@@ -97,7 +97,34 @@ export interface ComponentDeduplicationConfig {
   similarity_threshold: number; // Ngưỡng giống nhau về class CSS (mặc định: 0.8)
 }
 
-export type ArchitecturePreset = 'nextjs' | 'clean-architecture' | 'fsd' | 'ddd' | 'custom';
+export type RuleCategory =
+  | 'i18n'
+  | 'tokens'
+  | 'composition'
+  | 'deduplication'
+  | 'architecture'
+  | 'craft';
+
+export type ArchitecturePreset =
+  | 'nextjs'
+  | 'clean-architecture'
+  | 'fsd'
+  | 'ddd'
+  | 'craft-only'
+  | 'i18n-only'
+  | 'arch-only'
+  | 'tokens-only'
+  | 'custom';
+
+export interface ScanOptions {
+  only?: RuleCategory[];
+  skip?: RuleCategory[];
+}
+
+export interface FixOptions {
+  only?: RuleCategory[];
+  skip?: RuleCategory[];
+}
 
 export interface LayerConfig {
   name: string;

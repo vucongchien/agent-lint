@@ -56,4 +56,34 @@ preset: "fsd"
     expect(config.rules.architecture?.layers?.some((l) => l.name === 'shared')).toBe(true);
     expect(config.rules.architecture?.layers?.some((l) => l.name === 'features')).toBe(true);
   });
+
+  it('should auto-configure preset: "craft-only" enabling design_craft and disabling other rules', () => {
+    const yamlConfig = `
+version: "1.0"
+preset: "craft-only"
+`;
+    fs.writeFileSync(path.join(tempDir, '.agent-lint.yaml'), yamlConfig, 'utf-8');
+
+    const { config } = loadConfig(undefined, tempDir);
+
+    expect(config.rules.design_craft?.enabled).toBe(true);
+    expect(config.rules.i18n.enabled).toBe(false);
+    expect(config.rules.design_tokens.enabled).toBe(false);
+    expect(config.rules.architecture?.enabled).toBe(false);
+  });
+
+  it('should auto-configure preset: "i18n-only" enabling i18n and disabling design_craft', () => {
+    const yamlConfig = `
+version: "1.0"
+preset: "i18n-only"
+`;
+    fs.writeFileSync(path.join(tempDir, '.agent-lint.yaml'), yamlConfig, 'utf-8');
+
+    const { config } = loadConfig(undefined, tempDir);
+
+    expect(config.rules.i18n.enabled).toBe(true);
+    expect(config.rules.design_craft?.enabled).toBe(false);
+    expect(config.rules.design_tokens.enabled).toBe(false);
+    expect(config.rules.architecture?.enabled).toBe(false);
+  });
 });

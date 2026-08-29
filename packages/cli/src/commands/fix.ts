@@ -1,8 +1,11 @@
 import pc from 'picocolors';
 import { AgentLintEngine } from '@chien_swe/core';
+import { parseCategoryList } from './scan';
 
 export interface FixCommandOptions {
   config?: string;
+  only?: string;
+  skip?: string;
 }
 
 export function fixCommand(files: string[], options: FixCommandOptions) {
@@ -11,8 +14,11 @@ export function fixCommand(files: string[], options: FixCommandOptions) {
       configPath: options.config,
     });
 
+    const only = parseCategoryList(options.only);
+    const skip = parseCategoryList(options.skip);
+
     console.log(pc.cyan(`\n🔍 Scanning and auto-fixing violations...`));
-    const result = engine.fix(files.length > 0 ? files : undefined);
+    const result = engine.fix(files.length > 0 ? files : undefined, { only, skip });
 
     if (result.filesModified.length === 0) {
       console.log(pc.green(`✔ No files needed fixing. Everything is up to date!`));

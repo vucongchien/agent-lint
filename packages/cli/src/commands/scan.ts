@@ -9,10 +9,40 @@ import {
   formatSarifReport,
 } from '@chien_swe/core';
 
+import type { RuleCategory } from '@chien_swe/core';
+
 export interface ScanCommandOptions {
   config?: string;
   format?: 'pretty' | 'json' | 'agent' | 'sarif';
   output?: string;
+  only?: string;
+  skip?: string;
+}
+
+export function parseCategoryList(input?: string): RuleCategory[] | undefined {
+  if (!input) return undefined;
+  const aliasMap: Record<string, RuleCategory> = {
+    craft: 'craft',
+    design_craft: 'craft',
+    taste: 'craft',
+    i18n: 'i18n',
+    arch: 'architecture',
+    architecture: 'architecture',
+    token: 'tokens',
+    tokens: 'tokens',
+    design_tokens: 'tokens',
+    comp: 'composition',
+    composition: 'composition',
+    clean_composition: 'composition',
+    dedup: 'deduplication',
+    deduplication: 'deduplication',
+  };
+
+  return input
+    .split(',')
+    .map((s) => s.trim().toLowerCase())
+    .map((s) => aliasMap[s] || (s as RuleCategory))
+    .filter(Boolean);
 }
 
 export function scanCommand(files: string[], options: ScanCommandOptions) {
@@ -21,7 +51,10 @@ export function scanCommand(files: string[], options: ScanCommandOptions) {
       configPath: options.config,
     });
 
-    const result = engine.scan(files.length > 0 ? files : undefined);
+    const only = parseCategoryList(options.only);
+    const skip = parseCategoryList(options.skip);
+
+    const result = engine.scan(files.length > 0 ? files : undefined, { only, skip });
     const format = options.format || 'pretty';
 
     let outputContent = '';

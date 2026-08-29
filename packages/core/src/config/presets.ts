@@ -3,7 +3,9 @@ import type { ArchitecturePreset, ArchitectureRuleConfig } from '../types';
 /**
  * Định nghĩa cấu hình mặc định cho các Architecture Presets
  */
-export const ARCHITECTURE_PRESETS: Record<ArchitecturePreset, Partial<ArchitectureRuleConfig>> = {
+export const ARCHITECTURE_PRESETS: Partial<
+  Record<ArchitecturePreset, Partial<ArchitectureRuleConfig>>
+> = {
   // 1. Next.js App Router Standard
   nextjs: {
     enabled: true,

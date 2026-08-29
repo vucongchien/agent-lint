@@ -64,4 +64,26 @@ describe('AgentLintEngine End-to-End', () => {
     const viData = JSON.parse(fs.readFileSync(viJsonPath, 'utf-8'));
     expect(viData['xac_nhan']).toBe('Xác nhận');
   });
+
+  it('should selectively scan only specified categories with options.only', () => {
+    const filePath = path.join(tempDir, 'src', 'App.tsx');
+    fs.writeFileSync(
+      filePath,
+      `export function App() {
+        return <div className="bg-[#1e293b]"><h1>Đăng nhập hệ thống</h1></div>;
+      }`
+    );
+
+    const engine = new AgentLintEngine({ rootDir: tempDir });
+
+    // Chỉ quét i18n
+    const i18nOnlyResult = engine.scan([filePath], { only: ['i18n'] });
+    expect(i18nOnlyResult.violations.length).toBe(1);
+    expect(i18nOnlyResult.violations[0].ruleId).toBe('i18n-hardcoded');
+
+    // Chỉ quét tokens
+    const tokensOnlyResult = engine.scan([filePath], { only: ['tokens'] });
+    expect(tokensOnlyResult.violations.length).toBe(1);
+    expect(tokensOnlyResult.violations[0].ruleId).toBe('token-violation');
+  });
 });

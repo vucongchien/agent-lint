@@ -168,7 +168,19 @@ export const DesignCraftSchema = z.object({
 
 export const AgentLintConfigSchema = z.object({
   version: z.string().default('1.0'),
-  preset: z.enum(['nextjs', 'clean-architecture', 'fsd', 'ddd', 'custom']).optional(),
+  preset: z
+    .enum([
+      'nextjs',
+      'clean-architecture',
+      'fsd',
+      'ddd',
+      'craft-only',
+      'i18n-only',
+      'arch-only',
+      'tokens-only',
+      'custom',
+    ])
+    .optional(),
   target: z.object({
     include: z.array(z.string()).default(['src/**/*.{tsx,jsx,ts,js}']),
     exclude: z.array(z.string()).default([

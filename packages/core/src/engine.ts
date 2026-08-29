@@ -3,7 +3,10 @@ import path from 'path';
 import fg from 'fast-glob';
 import type {
   AgentLintConfig,
+  FixOptions,
   FixResult,
+  RuleCategory,
+  ScanOptions,
   ScanResult,
   Violation,
 } from './types';
@@ -72,10 +75,23 @@ export class AgentLintEngine {
     });
   }
 
+  private isCategoryActive(
+    category: RuleCategory,
+    options: ScanOptions = {}
+  ): boolean {
+    if (options.only && options.only.length > 0) {
+      return options.only.includes(category);
+    }
+    if (options.skip && options.skip.length > 0) {
+      return !options.skip.includes(category);
+    }
+    return true;
+  }
+
   /**
-   * Quét toàn bộ project tìm vi phạm
+   * Quét toàn bộ project tìm vi phạm (hỗ trợ cờ only/skip lọc theo category)
    */
-  public scan(files?: string[]): ScanResult {
+  public scan(files?: string[], options: ScanOptions = {}): ScanResult {
     const startTime = Date.now();
     const targetFiles = files && files.length > 0 ? files : this.getTargetFiles();
     const violations: Violation[] = [];
@@ -90,7 +106,10 @@ export class AgentLintEngine {
       const isCss = ['.css', '.scss', '.sass', '.less'].includes(ext);
 
       if (isCss) {
-        if (this.config.rules.design_tokens.enabled) {
+        if (
+          this.config.rules.design_tokens.enabled &&
+          this.isCategoryActive('tokens', options)
+        ) {
           const cssViolations = scanCssFileViolations({
             filePath,
             code,
@@ -100,7 +119,10 @@ export class AgentLintEngine {
         }
       } else {
         // 1. Scan i18n hardcodes
-        if (this.config.rules.i18n.enabled) {
+        if (
+          this.config.rules.i18n.enabled &&
+          this.isCategoryActive('i18n', options)
+        ) {
           const i18nViolations = scanI18nViolations({
             filePath,
             code,
@@ -110,7 +132,10 @@ export class AgentLintEngine {
         }
 
         // 2. Scan Design Token violations
-        if (this.config.rules.design_tokens.enabled) {
+        if (
+          this.config.rules.design_tokens.enabled &&
+          this.isCategoryActive('tokens', options)
+        ) {
           const tokenViolations = scanTokenViolations({
             filePath,
             code,
@@ -130,7 +155,10 @@ export class AgentLintEngine {
         }
 
         // 4. Scan Clean Composition in Page / Layout
-        if (this.config.rules.clean_composition?.enabled) {
+        if (
+          this.config.rules.clean_composition?.enabled &&
+          this.isCategoryActive('composition', options)
+        ) {
           const compViolations = scanCompositionViolations({
             filePath,
             code,
@@ -140,7 +168,10 @@ export class AgentLintEngine {
         }
 
         // 5. Scan Architecture & Boundary Violations (Clean Arch, FSD, DDD, Server/Client)
-        if (this.config.rules.architecture?.enabled) {
+        if (
+          this.config.rules.architecture?.enabled &&
+          this.isCategoryActive('architecture', options)
+        ) {
           const archViolations = scanArchitectureViolations({
             filePath,
             code,
@@ -150,8 +181,11 @@ export class AgentLintEngine {
           violations.push(...archViolations);
         }
 
-        // 6. Scan Design Craft & Visual Quality Violations (Anti-AI Slop)
-        if (this.config.rules.design_craft?.enabled) {
+        // 6. Scan Design Craft & Visual Quality Violations (Anti-AI Slop & Vercel Taste)
+        if (
+          this.config.rules.design_craft?.enabled &&
+          this.isCategoryActive('craft', options)
+        ) {
           const craftViolations = scanDesignCraftViolations({
             filePath,
             code,
@@ -163,7 +197,10 @@ export class AgentLintEngine {
     }
 
     // 7. Scan Component Deduplication across files (Rule of Three)
-    if (this.config.rules.component_deduplication?.enabled) {
+    if (
+      this.config.rules.component_deduplication?.enabled &&
+      this.isCategoryActive('deduplication', options)
+    ) {
       const dedupViolations = scanDuplicateLayoutViolations(
         scannedCodeList,
         this.config.rules.component_deduplication
@@ -184,8 +221,8 @@ export class AgentLintEngine {
   /**
    * Tự động sửa các vi phạm i18n và Custom Components
    */
-  public fix(files?: string[]): FixResult {
-    const scanRes = this.scan(files);
+  public fix(files?: string[], options: FixOptions = {}): FixResult {
+    const scanRes = this.scan(files, options);
     const filesModified: string[] = [];
     const keysAdded: { file: string; key: string; value: string }[] = [];
     let violationsFixed = 0;
@@ -206,7 +243,7 @@ export class AgentLintEngine {
 
       // 1. Fix i18n violations
       const i18nRule = this.config.rules.i18n;
-      if (i18nRule.enabled) {
+      if (i18nRule.enabled && this.isCategoryActive('i18n', options)) {
         const result = transformI18nFile({
           filePath,
           code: currentCode,
@@ -225,7 +262,7 @@ export class AgentLintEngine {
 
       // 2. Fix restricted components
       const compConfig = this.config.rules.design_tokens.enforce_components;
-      if (compConfig?.enabled) {
+      if (compConfig?.enabled && this.isCategoryActive('tokens', options)) {
         const compRes = transformRestrictedComponents(currentCode, compConfig, filePath);
         if (compRes.hasChanged) {
           currentCode = compRes.code;

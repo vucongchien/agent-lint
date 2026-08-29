@@ -159,9 +159,30 @@ export function loadConfig(
 
   // 1. Mở rộng Preset nếu có (preset ở root hoặc rules.architecture.preset)
   const presetKey = parsedYaml.preset || parsedYaml.rules?.architecture?.preset;
-  if (presetKey && ARCHITECTURE_PRESETS[presetKey as keyof typeof ARCHITECTURE_PRESETS]) {
+  if (!parsedYaml.rules) parsedYaml.rules = {};
+
+  if (presetKey === 'craft-only') {
+    parsedYaml.rules.design_craft = { enabled: true, ...parsedYaml.rules.design_craft };
+    parsedYaml.rules.i18n = { enabled: false, ...parsedYaml.rules.i18n };
+    parsedYaml.rules.design_tokens = { enabled: false, ...parsedYaml.rules.design_tokens };
+    parsedYaml.rules.architecture = { enabled: false, ...parsedYaml.rules.architecture };
+  } else if (presetKey === 'i18n-only') {
+    parsedYaml.rules.i18n = { enabled: true, ...parsedYaml.rules.i18n };
+    parsedYaml.rules.design_craft = { enabled: false, ...parsedYaml.rules.design_craft };
+    parsedYaml.rules.design_tokens = { enabled: false, ...parsedYaml.rules.design_tokens };
+    parsedYaml.rules.architecture = { enabled: false, ...parsedYaml.rules.architecture };
+  } else if (presetKey === 'arch-only') {
+    parsedYaml.rules.architecture = { enabled: true, ...parsedYaml.rules.architecture };
+    parsedYaml.rules.design_craft = { enabled: false, ...parsedYaml.rules.design_craft };
+    parsedYaml.rules.i18n = { enabled: false, ...parsedYaml.rules.i18n };
+    parsedYaml.rules.design_tokens = { enabled: false, ...parsedYaml.rules.design_tokens };
+  } else if (presetKey === 'tokens-only') {
+    parsedYaml.rules.design_tokens = { enabled: true, ...parsedYaml.rules.design_tokens };
+    parsedYaml.rules.design_craft = { enabled: false, ...parsedYaml.rules.design_craft };
+    parsedYaml.rules.i18n = { enabled: false, ...parsedYaml.rules.i18n };
+    parsedYaml.rules.architecture = { enabled: false, ...parsedYaml.rules.architecture };
+  } else if (presetKey && ARCHITECTURE_PRESETS[presetKey as keyof typeof ARCHITECTURE_PRESETS]) {
     const presetDefaults = ARCHITECTURE_PRESETS[presetKey as keyof typeof ARCHITECTURE_PRESETS];
-    if (!parsedYaml.rules) parsedYaml.rules = {};
     if (!parsedYaml.rules.architecture) parsedYaml.rules.architecture = {};
 
     parsedYaml.rules.architecture = {

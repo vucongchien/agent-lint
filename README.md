@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://github.com/vucongchien/agent-lint/actions/workflows/ci.yml"><img src="https://github.com/vucongchien/agent-lint/actions/workflows/ci.yml/badge.svg" alt="CI Status"></a>
-  <a href="https://github.com/vucongchien/agent-lint/actions"><img src="https://img.shields.io/badge/tests-77%20passed-brightgreen" alt="Tests"></a>
+  <a href="https://github.com/vucongchien/agent-lint/actions"><img src="https://img.shields.io/badge/tests-80%20passed-brightgreen" alt="Tests"></a>
   <a href="https://www.npmjs.com/package/agent-lint"><img src="https://img.shields.io/badge/npm-v0.1.0-blue" alt="npm version"></a>
   <a href="https://github.com/vucongchien/agent-lint/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
   <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.9+-blue" alt="TypeScript"></a>
@@ -16,7 +16,7 @@
 
 ## ⚡ Highlights
 
-- **🏛️ 1-Click Architecture Presets**: Enforce Clean Architecture, FSD, DDD, and Next.js Server/Client boundaries with zero boilerplate.
+- **🏛️ 1-Click Architecture Presets**: Enforce Clean Architecture, FSD, DDD, Next.js Server/Client boundaries, or focused presets (`craft-only`, `i18n-only`, `arch-only`).
 - **✨ Design Craft & 9.5/10 UX Sophistication**: Dark Mode integrity checks, optical kerning ($x - x/16$), 2-step type scale jumps, optical vertical centering, and zero AI slop (eliminates decorative floaters, monospace costumes, subjective level dots, and misleading affordances).
 - **⚡ Direct i18n Auto-Sync & ICU**: Auto-extracts static text & dynamic template literals (`` `Hello ${user}` ``) $\rightarrow$ updates dictionary files in real time.
 - **🧹 Dead Keys Cleaner**: Detects and prunes orphaned translation keys (`agent-lint clean-keys --prune`).
@@ -100,15 +100,22 @@ bun add -d agent-lint @chien_swe/core eslint-plugin-agent-lint
 
 ---
 
-## 💻 CLI Usage
+## 💻 CLI Usage & Selective Scanning
 
 ```bash
+# General Commands
 npx agent-lint init                  # Generate .agent-lint.yaml with smart defaults
-npx agent-lint scan                  # Scan codebase for violations
+npx agent-lint scan                  # Scan codebase for all violations
 npx agent-lint scan --format=agent   # Output actionable prompt for AI Agents (Cursor/Claude)
 npx agent-lint scan --format=sarif   # Generate SARIF report for Oxlint / GitHub CodeQL
 npx agent-lint fix                   # Automatically fix violations & sync translations
 npx agent-lint clean-keys --prune    # Detect and prune dead translation keys
+
+# 🎯 Selective Scanning & Fixing (--only / --skip)
+npx agent-lint scan --only=craft     # Only scan UI/UX Design Craft & Vercel Taste (<20ms)
+npx agent-lint scan --only=i18n      # Only scan for hardcoded strings & localization
+npx agent-lint scan --only=arch      # Only scan Clean Architecture / Server-Client boundaries
+npx agent-lint fix --only=i18n       # Only auto-fix translations without modifying tokens
 ```
 
 ---
@@ -118,7 +125,7 @@ npx agent-lint clean-keys --prune    # Detect and prune dead translation keys
 ```yaml
 version: "1.0"
 
-# 1-Click Presets: "nextjs" | "clean-architecture" | "fsd" | "ddd" | "custom"
+# 1-Click Presets: "nextjs" | "clean-architecture" | "fsd" | "ddd" | "craft-only" | "i18n-only" | "custom"
 preset: "nextjs"
 
 target:
