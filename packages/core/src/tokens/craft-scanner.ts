@@ -684,6 +684,162 @@ export function scanDesignCraftViolations(options: ScanDesignCraftOptions): Viol
           });
         }
       }
+
+      // 19. Vercel Taste: Cấm transition-all (Gây quá tải GPU và giật chuyển động)
+      if (config.no_transition_all !== false) {
+        const hasTransitionAll = classes.includes('transition-all');
+        if (hasTransitionAll) {
+          violations.push({
+            ruleId: 'transition-all',
+            severity: config.severity,
+            message:
+              'Vercel Taste / Performance: Avoid "transition-all" as it animates every layout/paint property blindly. Declare transitions explicitly (e.g. "transition-colors", "transition-opacity", "transition-transform") for smooth 60fps compositor performance.',
+            file: filePath,
+            loc: {
+              line: loc.start.line,
+              column: loc.start.column,
+              start: opening.start ?? 0,
+              end: opening.end ?? 0,
+            },
+            rawText: classStr,
+            metadata: { type: 'banned-transition-all', classes },
+          });
+        }
+      }
+
+      // 20. Vercel Taste: Cấm outline-none trần trụi nếu không có focus-visible thay thế
+      if (config.no_bare_outline_none !== false) {
+        const hasOutlineNone = classes.some((c) => /^(?:outline-none|focus:outline-none)$/.test(c));
+        const hasFocusRing = classes.some((c) => /^focus(?:-visible)?:ring/.test(c));
+
+        if (hasOutlineNone && !hasFocusRing) {
+          violations.push({
+            ruleId: 'bare-outline-none',
+            severity: config.severity,
+            message:
+              'Vercel Taste / Accessibility: Never remove focus rings with "outline-none" without a visible keyboard replacement. Add "focus-visible:ring-2 focus-visible:ring-offset-2" to preserve accessibility for keyboard navigation.',
+            file: filePath,
+            loc: {
+              line: loc.start.line,
+              column: loc.start.column,
+              start: opening.start ?? 0,
+              end: opening.end ?? 0,
+            },
+            rawText: classStr,
+            metadata: { type: 'bare-outline-none', classes },
+          });
+        }
+      }
+
+      // 21. Vercel Taste: Yêu cầu text-balance hoặc text-pretty trên Heading dài
+      if (config.heading_text_balance !== false) {
+        const tagName = t.isJSXIdentifier(opening.name) ? opening.name.name.toLowerCase() : '';
+        const isHeadingTag = /^(?:h1|h2|h3)$/.test(tagName);
+        const isHeadingSize = classes.some((c) => /^text-(?:2xl|3xl|4xl|5xl|6xl)$/.test(c));
+
+        if (isHeadingTag || isHeadingSize) {
+          const hasBalance = classes.some((c) => /^(?:text-balance|text-pretty)$/.test(c));
+          const textContent = path.node.children
+            .filter(t.isJSXText)
+            .map((t) => t.value)
+            .join(' ')
+            .trim();
+
+          if (!hasBalance && textContent.length > 25) {
+            violations.push({
+              ruleId: 'heading-text-balance',
+              severity: config.severity,
+              message:
+                'Vercel Taste / Editorial Typography: Headings should include "text-balance" or "text-pretty" to prevent orphaned words (widows) from awkwardly breaking onto their own line across dynamic viewport widths.',
+              file: filePath,
+              loc: {
+                line: loc.start.line,
+                column: loc.start.column,
+                start: opening.start ?? 0,
+                end: opening.end ?? 0,
+              },
+              rawText: textContent,
+              metadata: { type: 'missing-text-balance', textContent },
+            });
+          }
+        }
+      }
+
+      // 22. Vercel Taste: Bắt buộc tabular-nums trên số liệu/giá cả/timer
+      if (config.tabular_numbers !== false) {
+        const hasTabular = classes.includes('tabular-nums') || classes.includes('font-mono');
+        if (!hasTabular) {
+          const textContent = path.node.children
+            .filter(t.isJSXText)
+            .map((t) => t.value)
+            .join(' ')
+            .trim();
+
+          const isNumericMetric = /^(?:[$€₫£¥]\s*\d+(?:[.,]\d+)?|\d+(?:[.,]\d+)?%|\d{1,2}:\d{2}(?::\d{2})?|\d{1,3}(?:,\d{3})*\s*(?:users|reqs|ms|k|m|b)?)$/i.test(
+            textContent
+          );
+
+          if (isNumericMetric && textContent.length > 0) {
+            violations.push({
+              ruleId: 'tabular-numbers',
+              severity: config.severity,
+              message:
+                'Vercel Taste / Layout Stability: Numeric metrics, pricing currency, and timers should use "tabular-nums" or "font-mono" to align digit widths and eliminate layout jitter during number changes.',
+              file: filePath,
+              loc: {
+                line: loc.start.line,
+                column: loc.start.column,
+                start: opening.start ?? 0,
+                end: opening.end ?? 0,
+              },
+              rawText: textContent,
+              metadata: { type: 'missing-tabular-nums', textContent },
+            });
+          }
+        }
+      }
+
+      // 23. Vercel Taste: Bắt buộc min-w-0 trên flex child có truncate
+      if (config.flex_truncate_min_w_0 !== false) {
+        const hasTruncate = classes.includes('truncate') || classes.some((c) => /^line-clamp-/.test(c));
+        const hasMinW0 = classes.includes('min-w-0');
+        const hasFixedW = classes.some((c) => /^w-(?:[0-9]+|\[.+?\])$/.test(c));
+
+        if (hasTruncate && !hasMinW0 && !hasFixedW) {
+          // Kiểm tra xem thẻ cha có phải là flex container không
+          let parent: any = path.parentPath;
+          let isInsideFlex = false;
+
+          while (parent) {
+            if (parent.isJSXElement?.()) {
+              const parentClasses = extractClassNames(parent.node.openingElement);
+              if (parentClasses.includes('flex') || parentClasses.includes('inline-flex')) {
+                isInsideFlex = true;
+                break;
+              }
+            }
+            parent = parent.parentPath;
+          }
+
+          if (isInsideFlex) {
+            violations.push({
+              ruleId: 'flex-truncate-min-w-0',
+              severity: config.severity,
+              message:
+                'Vercel Taste / Flexbox Safety: Flex children with "truncate" must include "min-w-0". In standard CSS flexbox, flex items default to "min-width: auto", which prevents text truncation from shrinking properly and causes container overflow.',
+              file: filePath,
+              loc: {
+                line: loc.start.line,
+                column: loc.start.column,
+                start: opening.start ?? 0,
+                end: opening.end ?? 0,
+              },
+              rawText: classStr,
+              metadata: { type: 'flex-truncate-overflow', classes },
+            });
+          }
+        }
+      }
     },
   });
 

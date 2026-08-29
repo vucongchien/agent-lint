@@ -415,4 +415,107 @@ describe('Design Craft & Visual Quality Scanner (Anti-AI Slop)', () => {
     expect(violations[0].ruleId).toBe('undersized-ui-text');
     expect(violations[0].message).toContain('is below the 11px threshold');
   });
+
+  it('should flag transition-all on animated elements (Vercel Taste)', () => {
+    const code = `
+      export function AnimatedCard() {
+        return (
+          <div className="p-4 transition-all duration-300 hover:scale-105">
+            Card Content
+          </div>
+        );
+      }
+    `;
+
+    const violations = scanDesignCraftViolations({
+      filePath: 'src/components/Card.tsx',
+      code,
+      config,
+    });
+
+    expect(violations.some((v) => v.ruleId === 'transition-all')).toBe(true);
+    expect(violations.find((v) => v.ruleId === 'transition-all')?.message).toContain('Avoid "transition-all"');
+  });
+
+  it('should flag bare outline-none without focus-visible replacement (Vercel Taste)', () => {
+    const code = `
+      export function Input() {
+        return (
+          <input className="outline-none border border-slate-300 p-2" />
+        );
+      }
+    `;
+
+    const violations = scanDesignCraftViolations({
+      filePath: 'src/components/Input.tsx',
+      code,
+      config,
+    });
+
+    expect(violations.some((v) => v.ruleId === 'bare-outline-none')).toBe(true);
+    expect(violations.find((v) => v.ruleId === 'bare-outline-none')?.message).toContain('Never remove focus rings with "outline-none"');
+  });
+
+  it('should flag long headings missing text-balance (Vercel Taste)', () => {
+    const code = `
+      export function HeroTitle() {
+        return (
+          <h1 className="text-4xl font-bold">
+            Building the next generation of intelligent software for developers
+          </h1>
+        );
+      }
+    `;
+
+    const violations = scanDesignCraftViolations({
+      filePath: 'src/components/HeroTitle.tsx',
+      code,
+      config,
+    });
+
+    expect(violations.some((v) => v.ruleId === 'heading-text-balance')).toBe(true);
+    expect(violations.find((v) => v.ruleId === 'heading-text-balance')?.message).toContain('Headings should include "text-balance"');
+  });
+
+  it('should flag pricing currency missing tabular-nums (Vercel Taste)', () => {
+    const code = `
+      export function PriceTag() {
+        return (
+          <span className="text-2xl font-bold">
+            $99.00
+          </span>
+        );
+      }
+    `;
+
+    const violations = scanDesignCraftViolations({
+      filePath: 'src/components/Price.tsx',
+      code,
+      config,
+    });
+
+    expect(violations.some((v) => v.ruleId === 'tabular-numbers')).toBe(true);
+    expect(violations.find((v) => v.ruleId === 'tabular-numbers')?.message).toContain('should use "tabular-nums"');
+  });
+
+  it('should flag flex child with truncate missing min-w-0 (Vercel Taste)', () => {
+    const code = `
+      export function UserRow() {
+        return (
+          <div className="flex items-center gap-3">
+            <span className="truncate">Very long user description that might overflow the flex container</span>
+          </div>
+        );
+      }
+    `;
+
+    const violations = scanDesignCraftViolations({
+      filePath: 'src/components/Row.tsx',
+      code,
+      config,
+    });
+
+    expect(violations.some((v) => v.ruleId === 'flex-truncate-min-w-0')).toBe(true);
+    expect(violations.find((v) => v.ruleId === 'flex-truncate-min-w-0')?.message).toContain('Flex children with "truncate" must include "min-w-0"');
+  });
 });

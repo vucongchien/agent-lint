@@ -151,6 +151,11 @@ export interface DesignCraftConfig {
   no_subjective_level_dots?: boolean;        // Cấm vòng lặp 5 chấm level kỹ năng đánh giá chủ quan trong CV
   no_misleading_affordance?: boolean;        // Cấm nút gửi giả lập chatbox kích hoạt mở popup ngoài mà không có chỉ báo ↗
   no_undersized_ui_text?: boolean;           // Cấm cỡ chữ < 11px gây khó đọc trên thiết bị di động
+  no_transition_all?: boolean;               // Vercel Taste: Cấm transition-all gây nặng GPU, bắt buộc chuyển động tường minh
+  no_bare_outline_none?: boolean;            // Vercel Taste: Cấm outline-none trần trụi nếu không có focus-visible thay thế
+  heading_text_balance?: boolean;            // Vercel Taste: Yêu cầu text-balance hoặc text-pretty trên Heading để chống từ mồ côi
+  tabular_numbers?: boolean;                 // Vercel Taste: Bắt buộc tabular-nums trên số liệu/giá cả/timer để chống giật layout
+  flex_truncate_min_w_0?: boolean;           // Vercel Taste: Bắt buộc min-w-0 trên flex children có truncate để tránh vỡ layout
 }
 
 export interface AgentLintConfig {
@@ -206,7 +211,12 @@ export interface Violation {
     | 'decorative-floaters'
     | 'subjective-level-dots'
     | 'misleading-affordance'
-    | 'undersized-ui-text';
+    | 'undersized-ui-text'
+    | 'transition-all'
+    | 'bare-outline-none'
+    | 'heading-text-balance'
+    | 'tabular-numbers'
+    | 'flex-truncate-min-w-0';
   severity: Severity;
   message: string;
   file: string;
