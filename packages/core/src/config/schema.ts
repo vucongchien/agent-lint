@@ -130,10 +130,22 @@ export const PublicApiSchema = z.object({
 export const ArchitectureRuleSchema = z.object({
   enabled: z.boolean().default(true),
   severity: z.enum(['warn', 'error', 'off']).default('error'),
-  preset: z.enum(['nextjs', 'clean-architecture', 'fsd', 'ddd', 'custom']).default('custom'),
+  preset: z
+    .enum([
+      'nextjs',
+      'clean-architecture',
+      'fsd',
+      'ddd',
+      'craft-only',
+      'i18n-only',
+      'arch-only',
+      'tokens-only',
+      'custom',
+    ])
+    .default('nextjs'),
   allow_type_imports: z.boolean().default(true),
   layers: z.array(LayerSchema).optional(),
-  server_client_boundary: ServerClientBoundarySchema.optional(),
+  server_client_boundary: ServerClientBoundarySchema.default({}),
   public_api: PublicApiSchema.optional(),
 });
 
@@ -181,24 +193,28 @@ export const AgentLintConfigSchema = z.object({
       'custom',
     ])
     .optional(),
-  target: z.object({
-    include: z.array(z.string()).default(['src/**/*.{tsx,jsx,ts,js}']),
-    exclude: z.array(z.string()).default([
-      '**/*.test.{tsx,jsx,ts,js}',
-      '**/*.spec.{tsx,jsx,ts,js}',
-      '**/node_modules/**',
-      '**/.next/**',
-      '**/dist/**',
-    ]),
-  }).default({}),
-  rules: z.object({
-    i18n: I18nRuleSchema.default({}),
-    design_tokens: DesignTokensRuleSchema.default({}),
-    clean_composition: CleanCompositionSchema.optional(),
-    component_deduplication: ComponentDeduplicationSchema.optional(),
-    architecture: ArchitectureRuleSchema.optional(),
-    design_craft: DesignCraftSchema.optional(),
-  }).default({}),
+  target: z
+    .object({
+      include: z.array(z.string()).default(['src/**/*.{tsx,jsx,ts,js}']),
+      exclude: z.array(z.string()).default([
+        '**/*.test.{tsx,jsx,ts,js}',
+        '**/*.spec.{tsx,jsx,ts,js}',
+        '**/node_modules/**',
+        '**/.next/**',
+        '**/dist/**',
+      ]),
+    })
+    .default({}),
+  rules: z
+    .object({
+      i18n: I18nRuleSchema.default({}),
+      design_tokens: DesignTokensRuleSchema.default({}),
+      clean_composition: CleanCompositionSchema.default({}),
+      component_deduplication: ComponentDeduplicationSchema.default({}),
+      architecture: ArchitectureRuleSchema.default({}),
+      design_craft: DesignCraftSchema.default({}),
+    })
+    .default({}),
 });
 
 export type AgentLintConfigInput = z.input<typeof AgentLintConfigSchema>;
