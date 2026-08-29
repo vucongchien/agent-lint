@@ -1,5 +1,5 @@
 {
-  "name": "agent-lint",
+  "name": "@chien_swe/agent-lint",
   "version": "0.1.0",
   "description": "CLI tool for linting and auto-syncing i18n & design tokens for React/Next.js with AI Agent support",
   "type": "module",
@@ -22,5 +22,11 @@
   "devDependencies": {
     "@chien_swe/core": "workspace:*",
     "@chien_swe/observatory": "workspace:*"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }

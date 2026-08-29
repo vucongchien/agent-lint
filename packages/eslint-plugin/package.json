@@ -1,10 +1,16 @@
 {
-  "name": "eslint-plugin-agent-lint",
+  "name": "@chien_swe/eslint-plugin",
   "version": "0.1.0",
   "description": "ESLint plugin for i18n hardcode detection and design token compliance",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts --clean",
     "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
