@@ -243,6 +243,45 @@ export function loadConfig(
     }
   }
 
+  // Tự động load Design Tokens từ source_file (ví dụ src/config/tokens.ts) hoặc file token chuẩn
+  const designTokensConfig = validated.rules.design_tokens;
+  if (designTokensConfig.enabled) {
+    const candidateFiles = [
+      designTokensConfig.source_file,
+      'src/config/tokens.ts',
+      'src/tokens.ts',
+      'src/config/tokens.json',
+      'tokens.ts',
+      'tokens.json',
+      'design-tokens.json',
+    ].filter(Boolean) as string[];
+
+    for (const cand of candidateFiles) {
+      const fullCandPath = path.resolve(rootDir, cand);
+      if (fs.existsSync(fullCandPath)) {
+        try {
+          const content = fs.readFileSync(fullCandPath, 'utf-8');
+          if (!designTokensConfig.tokens) designTokensConfig.tokens = {};
+          if (!designTokensConfig.tokens.colors) designTokensConfig.tokens.colors = {};
+
+          // Extract DTCG tokens: { $value: "#..." } or raw hex "#4F46E5"
+          const hexRegex = /(?:(\w+)\s*:\s*\{[^}]*\$value\s*:\s*["'](#[A-Fa-f0-9]{3,8})["'])|(?:["']?([a-zA-Z0-9_-]+)["']?\s*:\s*["'](#[A-Fa-f0-9]{3,8})["'])/g;
+          let match;
+          while ((match = hexRegex.exec(content)) !== null) {
+            const key = match[1] || match[3];
+            const hex = match[2] || match[4];
+            if (key && hex && !designTokensConfig.tokens.colors[key]) {
+              designTokensConfig.tokens.colors[key] = hex;
+            }
+          }
+          break;
+        } catch {
+          // ignore extraction error
+        }
+      }
+    }
+  }
+
   return {
     config: validated as AgentLintConfig,
     resolvedConfigPath: configPath,

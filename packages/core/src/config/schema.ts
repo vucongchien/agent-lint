@@ -69,6 +69,7 @@ export const DesignTokensRuleSchema = z.object({
   enabled: z.boolean().default(true),
   severity: z.enum(['warn', 'error', 'off']).default('warn'),
   provider: z.enum(['tailwind', 'custom', 'css-variables']).default('tailwind'),
+  source_file: z.string().optional(),
   enforce: DesignTokensEnforceSchema.default({}),
   suggestion: DesignTokensSuggestionSchema.default({}),
   tokens: z.object({
