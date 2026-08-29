@@ -1,6 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import { chromium, Browser, Page } from 'playwright-core';
 import type { PerformanceMetrics, ActionRiskLevel } from '../types';
 import { classifyActionRisk } from '../planner/risk-classifier';
 
@@ -72,9 +71,10 @@ export async function runRealPlaywrightCrawler(
   let actionsCount = 0;
 
   const executablePath = findSystemBrowserExecutable();
-  let browser: Browser | null = null;
+  let browser: any = null;
 
   try {
+    const { chromium } = await import('playwright-core');
     browser = await chromium.launch({
       executablePath,
       headless: true,
@@ -88,13 +88,13 @@ export async function runRealPlaywrightCrawler(
 
     const page = await context.newPage();
 
-    page.on('console', (msg) => {
+    page.on('console', (msg: any) => {
       if (msg.type() === 'error') {
         consoleErrors.push(msg.text());
       }
     });
 
-    page.on('pageerror', (err) => {
+    page.on('pageerror', (err: any) => {
       consoleErrors.push(`[Unhandled Exception] ${err.message}`);
     });
 
@@ -162,9 +162,9 @@ export async function runRealPlaywrightCrawler(
         const isVisible = await el.isVisible();
         if (!isVisible) continue;
 
-        const tagName = await el.evaluate((node) => node.tagName.toLowerCase());
-        const textContent = await el.evaluate((node) => node.textContent || '');
-        const href = await el.evaluate((node) => (node as HTMLAnchorElement).href || '');
+        const tagName = await el.evaluate((node: any) => node.tagName.toLowerCase());
+        const textContent = await el.evaluate((node: any) => node.textContent || '');
+        const href = await el.evaluate((node: any) => (node as HTMLAnchorElement).href || '');
 
         const risk = classifyActionRisk({
           tag: tagName,
